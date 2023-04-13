@@ -8,12 +8,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Ahsan.Domain.Entities;
+using Microsoft.Extensions.Configuration;
 
 namespace Ahsan.Service.Helpers;
 
 public class EmailVerification
 {
-    public Task<string> SendAsync(User user)
+    private readonly IConfiguration configuration;
+    public EmailVerification(IConfiguration configuration)
+    {
+        this.configuration = configuration.GetSection("Email");
+    }
+    public async Task<string> SendAsync(User user)
     {
         try
         {
@@ -37,7 +43,7 @@ public class EmailVerification
             await sendMessage.SendAsync(email);
             await sendMessage.DisconnectAsync(true);
 
-            return Ok(result.ToString());
+            return result.ToString();
         }
         catch
         {
