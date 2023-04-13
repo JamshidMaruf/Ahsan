@@ -17,10 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ahsan.Data\Ahsan.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\Ahsan.Service\Ahsan.Service.csproj" />
   </ItemGroup>
 
 </Project>
