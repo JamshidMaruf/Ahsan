@@ -2,8 +2,11 @@
 
 namespace Ahsan.Service.DTOs.Positions;
 
-public class PositionForCreationDto
+public class PositionForUpdateDto
 {
+    [Required]
+    public long Id { get; set; }
+
     [Required]
     public string Name { get; set; }
 }

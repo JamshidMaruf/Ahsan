@@ -3,5 +3,5 @@
 public enum UserRole : byte
 {
     Admin = 1,
-    User 
+    User
 }

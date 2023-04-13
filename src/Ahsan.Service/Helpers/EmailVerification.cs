@@ -1,14 +1,10 @@
-﻿using MailKit.Security;
-using MimeKit.Text;
-using MimeKit;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ahsan.Domain.Entities;
+﻿using Ahsan.Domain.Entities;
+using Ahsan.Service.Exceptions;
+using MailKit.Security;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
+using MimeKit.Text;
+using StackExchange.Redis;
 
 namespace Ahsan.Service.Helpers;
 
@@ -19,6 +15,7 @@ public class EmailVerification
     {
         this.configuration = configuration.GetSection("Email");
     }
+
     public async Task<string> SendAsync(User user)
     {
         try
@@ -45,9 +42,9 @@ public class EmailVerification
 
             return result.ToString();
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            throw new CustomException(400, ex.Message);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace Ahsan.Domain.Entities;
 
 
-public class Message
+public class EmailMessage
 {
     public string To { get; set; }
     public string Subject { get; set; }

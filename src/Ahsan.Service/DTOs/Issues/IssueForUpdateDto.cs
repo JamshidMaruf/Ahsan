@@ -2,8 +2,11 @@
 
 namespace Ahsan.Service.DTOs.Issues;
 
-public class IssueForCreationDto
+public class IssueForUpdateDto
 {
+    [Required]
+    public long Id { get; set; }
+
     [Required]
     public string Title { get; set; }
 

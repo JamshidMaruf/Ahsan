@@ -1,6 +1,5 @@
 ﻿using Ahsan.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 namespace Ahsan.Data.Contexts;
 
@@ -11,11 +10,12 @@ public class AppDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<Company> Companyies { get; set; }
-    public virtual DbSet<CompanyEmployee> CompanyEmployees { get; set;}
+    public virtual DbSet<CompanyEmployee> CompanyEmployees { get; set; }
     public virtual DbSet<Issue> Issues { get; set; }
     public virtual DbSet<IssueCategory> IssueCategories { get; set; }
     public virtual DbSet<Position> Positions { get; set; }
 
+    #region FluentApi
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Company>()
@@ -66,4 +66,5 @@ public class AppDbContext : DbContext
             .HasForeignKey(ic => ic.CompanyId)
             .OnDelete(DeleteBehavior.NoAction);
     }
+    #endregion
 }
