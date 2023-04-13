@@ -17,7 +17,13 @@ public class User : Auditable
     public string Username { get; set; }
     [Required, MinLength(5), MaxLength(50)]
     public string Password { get; set; }
+<<<<<<< HEAD
     [EmailAddress]
     public string Email { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
+=======
+    public UserRole Role { get; set; }
+
+    public ICollection<Company> Companies { get; set; }
+>>>>>>> main
 }
