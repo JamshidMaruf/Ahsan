@@ -1,4 +1,5 @@
 ﻿using Ahsan.Domain.Entities;
+using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
@@ -16,7 +17,7 @@ public class EmailVerification
         this.configuration = configuration.GetSection("Email");
     }
 
-    public async Task<string> SendAsync(User user)
+    public async Task<string> SendAsync(UserForResultDto user)
     {
         try
         {

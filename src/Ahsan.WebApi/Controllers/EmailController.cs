@@ -1,4 +1,5 @@
 ﻿using Ahsan.Domain.Entities;
+using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,7 @@ namespace Ahsan.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendVerificationCode(User user)
+        public async Task<IActionResult> SendVerificationCode(UserForResultDto user)
         {
             var result = await this.emailverification.SendAsync(user);
             return Ok(result);
