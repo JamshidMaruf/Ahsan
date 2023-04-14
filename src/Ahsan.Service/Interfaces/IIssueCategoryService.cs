@@ -8,8 +8,8 @@ public interface IIssueCategoryService
 {
     ValueTask<IssueCategoryForResultDto> CreateAsync(IssueCategoryForCreationDto dto);
     ValueTask<IssueCategoryForResultDto> UpdateAsync(IssueCategoryForUpdateDto dto);
-    ValueTask<bool> DeleteAsync(Expression<Func<IssueCategory, bool>> expression);
-    ValueTask<IssueCategoryForResultDto> GetAsync(Expression<Func<IssueCategory, bool>> expression);
+    ValueTask<bool> DeleteAsync(long id);
+    ValueTask<IssueCategoryForResultDto> GetByIdAsync(long id);
     ValueTask<IEnumerable<IssueCategoryForResultDto>> GetAllAsync(
         Expression<Func<IssueCategory, bool>> expression = null, string search = null);
 }
