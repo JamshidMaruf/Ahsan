@@ -39,7 +39,7 @@ public class CompanyService : ICompanyService
         if (company is null)
             throw new CustomException(404, "Company not found");
 
-        await companyRepository.DeleteAsync(company);
+        await this.companyRepository.DeleteAsync(company);
         await this.companyRepository.SaveChangesAsync();
         return true;
     }

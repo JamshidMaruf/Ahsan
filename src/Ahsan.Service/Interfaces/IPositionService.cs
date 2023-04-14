@@ -8,8 +8,8 @@ public interface IPositionService
 {
     ValueTask<PositionForResultDto> CreateAsync(PositionForCreationDto dto);
     ValueTask<PositionForResultDto> UpdateAsync(PositionForUpdateDto dto);
-    ValueTask<bool> DeleteAsync(Expression<Func<Position, bool>> expression);
-    ValueTask<PositionForResultDto> GetAsync(Expression<Func<Position, bool>> expression);
+    ValueTask<bool> DeleteAsync(long id);
+    ValueTask<PositionForResultDto> GetByIdAsync(long id);
     ValueTask<IEnumerable<PositionForResultDto>> GetAllAsync(
         Expression<Func<Position, bool>> expression = null, string search = null);
 }
