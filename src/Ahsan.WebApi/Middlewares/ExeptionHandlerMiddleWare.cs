@@ -2,16 +2,18 @@
 
 using Ahsan.Service.Exceptions;
 using Ahsan.WebApi.Models;
+using System;
 
 namespace Ahsan.WebApi.Middlewares;
 
 public class ExeptionHandlerMiddleWare
 {
     private readonly RequestDelegate next;
-
-    public ExeptionHandlerMiddleWare(RequestDelegate next)
+    private readonly ILogger<ExeptionHandlerMiddleWare> logger;
+    public ExeptionHandlerMiddleWare(RequestDelegate next, ILogger<ExeptionHandlerMiddleWare> logger)
     {
         this.next = next;
+        this.logger = logger;
     }
 
     public async Task Invoke(HttpContext context)
@@ -19,23 +21,28 @@ public class ExeptionHandlerMiddleWare
         try
         {
             await this.next(context);
-        }
-        catch(CustomException exeption)
-        {
-            context.Response.StatusCode = exeption.Code;
             await context.Response.WriteAsJsonAsync(new Response
             {
-                Code = exeption.Code,
-                Error = exeption.Message
+                Code = 200,
             });
         }
-        catch(Exception exeption)
+        catch(CustomException exception)
         {
+            context.Response.StatusCode = exception.Code;
+            await context.Response.WriteAsJsonAsync(new Response
+            {
+                Code = exception.Code,
+                Error = exception.Message
+            });
+        }
+        catch(Exception exception)
+        {
+            this.logger.LogError($"{exception.ToString()}\n");  
             context.Response.StatusCode = 500;
             await context.Response.WriteAsJsonAsync(new Response
             {
                 Code = 500,
-                Error = exeption.Message
+                Error = exception.Message
             });
         }
     }

@@ -10,6 +10,7 @@ public static class ServiceExtensions
     public static void AddCustomServices(this IServiceCollection services)
     {
         services.AddScoped<ICompanyService, CompanyService>();
+       // services.AddScoped<IUserService, UserService>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     }
 }
