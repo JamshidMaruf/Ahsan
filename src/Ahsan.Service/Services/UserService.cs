@@ -2,6 +2,7 @@
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
+using Ahsan.Service.Helpers;
 using Ahsan.Service.Interfaces;
 using AutoMapper;
 using System.Linq.Expressions;
@@ -90,5 +91,18 @@ public class UserService : IUserService
         existUser.Password = dto.ComfirmPassword;
         await userRepository.SaveChangesAsync();
         return mapper.Map<UserForResultDto>(existUser);
+    }
+
+    public async ValueTask ImageUploadAsync(UserForCreationDto dto)
+    {
+        var fileExtension = Path.GetExtension(dto.Image.FileName);
+        var fileName = Guid.NewGuid().ToString("N") + fileExtension;
+        var webRootPath = EnvironmentHelper.WebHostPath;
+        var folder = Path.Combine(webRootPath, "uploads");
+        
+        if(!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+
     }
 }

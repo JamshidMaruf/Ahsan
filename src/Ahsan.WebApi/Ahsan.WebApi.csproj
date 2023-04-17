@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Ahsan.Service\Ahsan.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

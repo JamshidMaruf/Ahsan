@@ -32,4 +32,11 @@ public class UsersOrderController : BaseController
     [HttpGet("get-list")]
     public async Task<IActionResult> GetAllCompany()
         => Ok(await this.userService.GetAllAsync());
+
+    [HttpPost]
+    public async ValueTask<IActionResult> UploadImage([FromForm] UserForCreationDto dto)
+    {
+        await userService.ImageUploadAsync(dto);
+        return Ok();
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace Ahsan.Service.DTOs.Users;
 
@@ -17,4 +18,5 @@ public class UserForCreationDto
     public string Password { get; set; }
     public string Phone { get; set; }
     public string Email { get; set; }
+    public IFormFile Image { get; set; }
 }
