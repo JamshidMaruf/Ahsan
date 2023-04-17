@@ -2,6 +2,7 @@
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
+using Ahsan.Service.Extensions;
 using Ahsan.Service.Helpers;
 using Ahsan.Service.Interfaces;
 using AutoMapper;
@@ -95,6 +96,7 @@ public class UserService : IUserService
 
     public async ValueTask ImageUploadAsync(UserForCreationDto dto)
     {
+        byte[] image = dto.Image.ToByteArray();
         var fileExtension = Path.GetExtension(dto.Image.FileName);
         var fileName = Guid.NewGuid().ToString("N") + fileExtension;
         var webRootPath = EnvironmentHelper.WebHostPath;
