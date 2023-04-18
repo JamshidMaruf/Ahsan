@@ -22,49 +22,49 @@ public class AppDbContext : DbContext
             .HasOne(c => c.Owner)
             .WithMany(u => u.Companies)
             .HasForeignKey(c => c.OwnerId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<CompanyEmployee>()
             .HasOne(ce => ce.Employee)
             .WithMany()
             .HasForeignKey(ce => ce.EmployeeId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<CompanyEmployee>()
             .HasOne(ce => ce.Company)
             .WithMany(c => c.Employees)
             .HasForeignKey(ce => ce.CompanyId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<CompanyEmployee>()
             .HasOne(ce => ce.Position)
             .WithMany()
             .HasForeignKey(ce => ce.PositionId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Issue>()
             .HasOne(i => i.Company)
             .WithMany(c => c.Issues)
             .HasForeignKey(i => i.CompanyId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Issue>()
             .HasOne(i => i.Category)
             .WithMany()
             .HasForeignKey(i => i.CategoryId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Issue>()
             .HasOne(i => i.AssignedUser)
             .WithMany(au => au.Assignments)
             .HasForeignKey(i => i.AssignedId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<IssueCategory>()
             .HasOne(ic => ic.Company)
             .WithMany(c => c.IssueCategories)
             .HasForeignKey(ic => ic.CompanyId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
     }
     #endregion
 }
