@@ -67,12 +67,13 @@ public class AppDbContext : DbContext
             .WithMany(c => c.IssueCategories)
             .HasForeignKey(ic => ic.CompanyId)
             .OnDelete(DeleteBehavior.SetNull); // When Issue Category is deleted Company shouldn't be deleted.
-       
-        modelBuilder.Entity<UserImage>()
-       .HasOne(u => u.User)
-       .WithMany()
-       .HasForeignKey(u => u.UserId)
-       .OnDelete(DeleteBehavior.Cascade); //when the User is gone, User's image is gone with him.
+
+        modelBuilder.Entity<User>()
+             .HasOne<UserImage>()
+             .WithOne(ui => ui.User)
+             .HasForeignKey<UserImage>(u => u.UserId)
+             .OnDelete(DeleteBehavior.Cascade); //when the User is gone, User's image is gone with him
+
 
     }
     #endregion
