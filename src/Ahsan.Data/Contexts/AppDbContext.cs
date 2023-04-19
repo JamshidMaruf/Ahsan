@@ -65,6 +65,18 @@ public class AppDbContext : DbContext
             .WithMany(c => c.IssueCategories)
             .HasForeignKey(ic => ic.CompanyId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<User>()
+        .HasMany(u => u.Companies)
+        .WithOne(c => c.Owner)
+        .HasForeignKey(c => c.OwnerId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+         .HasOne(u => u.ImagePath)
+         .WithMany()
+         .OnDelete(DeleteBehavior.Cascade);
+        
     }
     #endregion
 }
