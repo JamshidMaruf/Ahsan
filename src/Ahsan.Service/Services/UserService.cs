@@ -27,7 +27,7 @@ public class UserService : IUserService
 
     public async ValueTask<UserForResultDto> CreateAsync(UserForCreationDto dto)
     {
-        User user = await this.userRepository.GetAsync(u => u.Username.ToLower() == dto.Username.ToLower());
+        User user = await this.userRepository.SelectAsync(u => u.Username.ToLower() == dto.Username.ToLower());
         if (user is not null)
             throw new CustomException(403, "User already exist with this username");
 
@@ -39,7 +39,7 @@ public class UserService : IUserService
 
     public async ValueTask<bool> DeleteAsync(long id)
     {
-        var user = await this.userRepository.GetAsync(u => u.Id.Equals(id));
+        var user = await this.userRepository.SelectAsync(u => u.Id.Equals(id));
         if (user is null)
             throw new CustomException(404, "User not found");
 
@@ -51,12 +51,12 @@ public class UserService : IUserService
     public async ValueTask<IEnumerable<UserForResultDto>> GetAllAsync(
         Expression<Func<User, bool>> expression = null, string search = null)
     {
-        var users = userRepository.GetAll(expression, isTracking: false);
+        var users = userRepository.SelectAll(expression, isTracking: false);
         var result = mapper.Map<IEnumerable<UserForResultDto>>(users);
 
         foreach (var item in result)
             item.Image = mapper.Map<UserImageForResultDto>(
-                await this.userImageRepository.GetAsync(t => t.UserId.Equals(item.Id)));
+                await this.userImageRepository.SelectAsync(t => t.UserId.Equals(item.Id)));
 
         if (!string.IsNullOrEmpty(search))
             return result.Where(
@@ -69,20 +69,20 @@ public class UserService : IUserService
 
     public async ValueTask<UserForResultDto> GetByIdAsync(long id)
     {
-        var user = await userRepository.GetAsync(u => u.Id.Equals(id));
+        var user = await userRepository.SelectAsync(u => u.Id.Equals(id));
         if (user is null)
             throw new CustomException(404, "User not found");
 
         var result = mapper.Map<UserForResultDto>(user);
         result.Image = mapper.Map<UserImageForResultDto>(
-            await this.userImageRepository.GetAsync(t => t.UserId.Equals(result.Id)));
+            await this.userImageRepository.SelectAsync(t => t.UserId.Equals(result.Id)));
 
         return result;
     }
 
     public async ValueTask<UserForResultDto> UpdateAsync(UserForUpdateDto dto)
     {
-        var updatingUser = await userRepository.GetAsync(u => u.Id.Equals(dto.Id));
+        var updatingUser = await userRepository.SelectAsync(u => u.Id.Equals(dto.Id));
         if (updatingUser is null)
             throw new CustomException(404, "User not found");
 
@@ -92,14 +92,14 @@ public class UserService : IUserService
 
         var result = mapper.Map<UserForResultDto>(updatingUser);
         result.Image = mapper.Map<UserImageForResultDto>(
-           await this.userImageRepository.GetAsync(t => t.UserId.Equals(result.Id)));
+           await this.userImageRepository.SelectAsync(t => t.UserId.Equals(result.Id)));
 
         return result;
     }
 
     public async ValueTask<UserForResultDto> ChangePasswordAsync(UserForChangePassword dto)
     {
-        User existUser = await userRepository.GetAsync(u => u.Username == dto.Username);
+        User existUser = await userRepository.SelectAsync(u => u.Username == dto.Username);
         if (existUser is null)
             throw new Exception("This username is not exist");
         else if (dto.NewPassword != dto.ComfirmPassword)
@@ -114,7 +114,7 @@ public class UserService : IUserService
 
     public async ValueTask<UserImageForResultDto> ImageUploadAsync(UserImageForCreationDto dto)
     {
-        var user = await this.userRepository.GetAsync(t => t.Id.Equals(dto.UserId));
+        var user = await this.userRepository.SelectAsync(t => t.Id.Equals(dto.UserId));
         if (user is null)
             throw new CustomException(404, "User is not found");
 
@@ -149,7 +149,7 @@ public class UserService : IUserService
 
     public async ValueTask<bool> DeleteUserImageAsync(long userId)
     {
-        var userImage = await this.userImageRepository.GetAsync(t => t.UserId.Equals(userId));
+        var userImage = await this.userImageRepository.SelectAsync(t => t.UserId.Equals(userId));
         if (userImage is null)
             throw new CustomException(404, "Image is not found");
 
@@ -161,7 +161,7 @@ public class UserService : IUserService
 
     public async ValueTask<UserImageForResultDto> GetUserImageAsync(long userId)
     {
-        var userImage = await this.userImageRepository.GetAsync(t => t.UserId.Equals(userId));
+        var userImage = await this.userImageRepository.SelectAsync(t => t.UserId.Equals(userId));
         if (userImage is null)
             throw new CustomException(404, "Image is not found");
         return mapper.Map<UserImageForResultDto>(userImage);

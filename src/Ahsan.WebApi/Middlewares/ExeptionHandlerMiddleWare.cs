@@ -21,12 +21,11 @@ public class ExeptionHandlerMiddleWare
         try
         {
             await this.next(context);
-
         }
         catch (CustomException exception)
         {
             context.Response.StatusCode = exception.Code;
-            await context.Response.WriteAsJsonAsync(new Response
+            await context.Response.WriteAsJsonAsync(new
             {
                 Code = exception.Code,
                 Error = exception.Message
@@ -36,10 +35,10 @@ public class ExeptionHandlerMiddleWare
         {
             this.logger.LogError($"{exception.ToString()}\n");
             context.Response.StatusCode = 500;
-            await context.Response.WriteAsJsonAsync(new Response
+            await context.Response.WriteAsJsonAsync(new
             {
                 Code = 500,
-                Error = exception.Message
+                Error = exception.Message,
             });
         }
     }

@@ -1,14 +1,14 @@
 ﻿using Ahsan.Data.Contexts;
 using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Commons;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
 #pragma warning disable
 
 namespace Ahsan.Data.Repositories;
 
-public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+public class Repository<TEntity> : IRepository<TEntity> where TEntity : Auditable
 {
     protected readonly AppDbContext dbContext;
     protected readonly DbSet<TEntity> dbSet;
@@ -19,25 +19,23 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     public async ValueTask<TEntity> InsertAsync(TEntity entity)
-        => (await dbSet.AddAsync(entity)).Entity;
+        => (await this.dbSet.AddAsync(entity)).Entity;
 
     public async ValueTask<TEntity> UpdateAsync(TEntity entity)
-    {
-        EntityEntry<TEntity> entryentity = this.dbContext.Update(entity);
-        return entryentity.Entity;
-    }
+        => (this.dbSet.Update(entity)).Entity;
 
     public async ValueTask<bool> DeleteAsync(TEntity entity)
     {
-        dbSet.Remove(entity);
+        var existEntity = this.dbSet.FirstOrDefaultAsync(t => t.Id.Equals(entity.Id));
+        if (existEntity is null) return false;
+        this.dbSet.Remove(entity);
         return true;
     }
 
-    public IQueryable<TEntity> GetAll(
+    public IQueryable<TEntity> SelectAll(
         Expression<Func<TEntity, bool>> expression = null, string[] includes = null, bool isTracking = true)
     {
         IQueryable<TEntity> query = expression is null ? dbSet : dbSet.Where(expression);
-
         if (includes is not null)
             foreach (var include in includes)
                 query = query.Include(include);
@@ -48,8 +46,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         return query;
     }
 
-    public async ValueTask<TEntity> GetAsync(Expression<Func<TEntity, bool>> expression, string[] includes = null)
-        => await GetAll(expression, includes).FirstOrDefaultAsync();
+    public async ValueTask<TEntity> SelectAsync(
+        Expression<Func<TEntity, bool>> expression, string[] includes = null)
+        => await this.SelectAll(expression, includes).FirstOrDefaultAsync();
 
     public async ValueTask SaveChangesAsync()
         => await dbContext.SaveChangesAsync();

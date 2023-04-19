@@ -72,12 +72,6 @@ public class AppDbContext : DbContext
         .WithOne(c => c.Owner)
         .HasForeignKey(c => c.OwnerId)
         .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-         .HasOne(u => u.ImagePath)
-         .WithMany()
-         .OnDelete(DeleteBehavior.Cascade);
-        
     }
     #endregion
 }

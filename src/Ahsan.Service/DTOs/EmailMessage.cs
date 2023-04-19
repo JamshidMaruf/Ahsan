@@ -1,6 +1,5 @@
 ﻿namespace Ahsan.Domain.Entities;
 
-
 public class EmailMessage
 {
     public string To { get; set; }

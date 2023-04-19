@@ -1,6 +1,5 @@
-﻿namespace Ahsan.Service.Interfaces
+﻿namespace Ahsan.Service.Interfaces;
+
+public interface ICompanyEmployeeService
 {
-    public interface ICompanyEmployeeService
-    {
-    }
 }

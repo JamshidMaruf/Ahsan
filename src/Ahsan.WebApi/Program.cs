@@ -2,7 +2,9 @@ using Ahsan.Data.Contexts;
 using Ahsan.Service.Helpers;
 using Ahsan.Service.Mappers;
 using Ahsan.WebApi.Extensions;
+using Ahsan.WebApi.Helpers;
 using Ahsan.WebApi.Middlewares;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -25,10 +27,15 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
+//Convert  Api url name to dash case 
+builder.Services.AddControllers(options =>
+    options.Conventions.Add(
+        new RouteTokenTransformerConvention(new RouteConfiguration())));
 
 var app = builder.Build();
 
-EnvironmentHelper.WebHostPath = app.Services.GetRequiredService<IWebHostEnvironment>().WebRootPath;
+EnvironmentHelper.WebHostPath = 
+    app.Services.GetRequiredService<IWebHostEnvironment>().WebRootPath;
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

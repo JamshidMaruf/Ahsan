@@ -21,54 +21,56 @@ public class CompanyService : ICompanyService
 
     public async ValueTask<CompanyForResultDto> CreateAsync(CompanyForCreationDto dto)
     {
-        var company = await this.companyRepository
-            .GetAsync(c => c.Name.ToLower() == dto.Name.ToLower());
+        Company company = await this.companyRepository
+            .SelectAsync(c => c.Name.ToLower() == dto.Name.ToLower());
         if (company is not null)
-            throw new CustomException(403, "Company already exist");
+            throw new CustomException(409, "Company already exist for given argument");
 
         Company mappedCompany = this.mapper.Map<Company>(dto);
-        var result = await this.companyRepository.InsertAsync(mappedCompany);
+        Company result = await this.companyRepository.InsertAsync(mappedCompany);
         await this.companyRepository.SaveChangesAsync();
         return this.mapper.Map<CompanyForResultDto>(result);
     }
 
-    public async ValueTask<bool> DeleteAsync(long id)
+    public async ValueTask<bool> DeleteAsync(long companyId)
     {
-        var company = await this.companyRepository
-            .GetAsync(company => company.Id.Equals(id));
+        Company company = await this.companyRepository
+            .SelectAsync(company => company.Id.Equals(companyId));
         if (company is null)
-            throw new CustomException(404, "Company not found");
+            throw new CustomException(404, "Company is not found for given id");
 
-        await this.companyRepository.DeleteAsync(company);
+        bool result = await this.companyRepository.DeleteAsync(company);
         await this.companyRepository.SaveChangesAsync();
-        return true;
+        return result;
     }
 
     public async ValueTask<IEnumerable<CompanyForResultDto>> GetAllAsync(
         Expression<Func<Company, bool>> expression = null, string search = null)
     {
-        var companies = companyRepository
-            .GetAll(expression, new string[] { "User" }, isTracking: false);
+        IQueryable<Company> companies = companyRepository
+            .SelectAll(expression, new string[] { "User" }, isTracking: false);
 
-        var result = mapper.Map<IEnumerable<CompanyForResultDto>>(companies);
-        if (string.IsNullOrEmpty(search))
-            return result
-                .Where(c => c.Name.ToLower().Contains(search.ToLower())).ToList();
+        IEnumerable<CompanyForResultDto> result = 
+            mapper.Map<IEnumerable<CompanyForResultDto>>(companies);
 
+        if (!string.IsNullOrEmpty(search))
+            return result.Where(c => 
+                c.Name.ToLower().Contains(search.ToLower())).ToList();
         return result;
     }
 
-    public async ValueTask<CompanyForResultDto> GetByIdAsync(long id)
+    public async ValueTask<CompanyForResultDto> GetByIdAsync(long companyId)
     {
-        var company = await companyRepository.GetAsync(company => company.Id.Equals(id));
+        Company company = await companyRepository
+            .SelectAsync(company => company.Id.Equals(companyId));
         if (company is null)
-            throw new CustomException(404, "Company not found");
+            throw new CustomException(404, "Company not found for given id");
         return mapper.Map<CompanyForResultDto>(company);
     }
 
-    public async ValueTask<CompanyForResultDto> UpdateAsync(CompanyForUpdateDto dto)
+    public async ValueTask<CompanyForResultDto> ModifyAsync(CompanyForUpdateDto dto)
     {
-        var company = await companyRepository.GetAsync(u => u.Id.Equals(dto.Id));
+        Company company = await companyRepository.SelectAsync(u => u.Id.Equals(dto.Id));
         if (company is null)
             throw new CustomException(404, "Company not found");
 

@@ -22,10 +22,10 @@ public class EmailVerification
             Random random = new Random();
             int verificationCode = random.Next(123456, 999999);
 
-           // ConnectionMultiplexer resdisConnect = ConnectionMultiplexer.Connect("localhost");
-           // IDatabase db = resdisConnect.GetDatabase();
-          //  db.StringSet("code", verificationCode.ToString());
-          //  var result = db.StringGet("code");
+            ConnectionMultiplexer resdisConnect = ConnectionMultiplexer.Connect("localhost");
+            IDatabase db = resdisConnect.GetDatabase();
+            db.StringSet("code", verificationCode.ToString());
+            var result = db.StringGet("code");
 
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(this.configuration["EmailAddress"]));

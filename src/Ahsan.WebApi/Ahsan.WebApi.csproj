@@ -25,4 +25,9 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DocumentationFile>bin\Debug\netcoreapp1.1\FileXMLName.xml</DocumentationFile>
+	</PropertyGroup>
 </Project>
+
+
