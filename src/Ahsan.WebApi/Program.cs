@@ -4,7 +4,6 @@ using Ahsan.Service.Mappers;
 using Ahsan.WebApi.Extensions;
 using Ahsan.WebApi.Middlewares;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

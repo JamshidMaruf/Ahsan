@@ -8,5 +8,5 @@ public class UserForResultDto
     public string Phone { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }
-    public string ImagePath { get; set; }
+    public UserImageForResultDto Image { get; set; }
 }

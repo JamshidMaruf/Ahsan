@@ -1,14 +1,13 @@
-﻿using Ahsan.Service.DTOs.Companies;
-using Ahsan.Service.DTOs.Users;
+﻿using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ahsan.WebApi.Controllers;
 
-public class UsersOrderController : BaseController
+public class UsersController : BaseController
 {
-    private readonly IUserService userService; 
-    public UsersOrderController(IUserService userService)
+    private readonly IUserService userService;
+    public UsersController(IUserService userService)
     {
         this.userService = userService;
     }
@@ -33,10 +32,15 @@ public class UsersOrderController : BaseController
     public async Task<IActionResult> GetAllCompany()
         => Ok(await this.userService.GetAllAsync());
 
-    [HttpPost]
-    public async ValueTask<IActionResult> UploadImage([FromForm] UserForCreationDto dto)
-    {
-        await userService.ImageUploadAsync(dto);
-        return Ok();
-    }
+    [HttpPost("image-create")]
+    public async ValueTask<IActionResult> UploadImage([FromForm] UserImageForCreationDto dto)
+        => Ok(await userService.ImageUploadAsync(dto));
+
+    [HttpDelete("image-delete/{userId:long}")]
+    public async Task<IActionResult> DeleteUserImage(long userId)
+        => Ok(await this.userService.DeleteUserImageAsync(userId));
+
+    [HttpGet("image-get/{userId:long}")]
+    public async Task<IActionResult> GetUserImage(long userId)
+        => Ok(await this.userService.GetUserImageAsync(userId));
 }

@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public virtual DbSet<Issue> Issues { get; set; }
     public virtual DbSet<IssueCategory> IssueCategories { get; set; }
     public virtual DbSet<Position> Positions { get; set; }
+    public virtual DbSet<UserImage> UserImages { get; set; }
 
     #region FluentApi
     protected override void OnModelCreating(ModelBuilder modelBuilder)

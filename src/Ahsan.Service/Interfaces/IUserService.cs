@@ -13,5 +13,8 @@ public interface IUserService
     ValueTask<IEnumerable<UserForResultDto>> GetAllAsync(
         Expression<Func<User, bool>> expression = null, string search = null);
     ValueTask<bool> DeleteAsync(long id);
-    ValueTask ImageUploadAsync(UserForCreationDto dto);
+    ValueTask<UserImageForResultDto> ImageUploadAsync(UserImageForCreationDto dto);
+    ValueTask<bool> DeleteUserImageAsync(long userId);
+    ValueTask<UserImageForResultDto> GetUserImageAsync(long userId);
+    ValueTask<UserForResultDto> UserVerify(string code);
 }
