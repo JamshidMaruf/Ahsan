@@ -171,4 +171,12 @@ public class UserService : IUserService
     {
         throw new NotImplementedException();
     }
+
+    public async ValueTask<UserForResultDto> CheckUserAsync(string username, string password = null)
+    {
+        var user = await this.userRepository.SelectAsync(t => t.Username.Equals(username));
+        if (user is null)
+            throw new CustomException(404, "User is not found");
+        return this.mapper.Map<UserForResultDto>(user);
+    }
 }

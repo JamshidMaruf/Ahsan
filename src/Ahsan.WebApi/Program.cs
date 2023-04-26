@@ -12,12 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("PostgresConnection")));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<EmailVerification>();
 builder.Services.AddCustomServices();
+
+// Swagger setup
+builder.Services.AddSwaggerService();
+
+// Jwt services
+builder.Services.AddJwtService(builder.Configuration);
 
 // Logger
 var logger = new LoggerConfiguration()
@@ -45,6 +50,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ExeptionHandlerMiddleWare>();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

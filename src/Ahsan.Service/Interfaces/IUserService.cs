@@ -16,5 +16,6 @@ public interface IUserService
     ValueTask<UserImageForResultDto> ImageUploadAsync(UserImageForCreationDto dto);
     ValueTask<bool> DeleteUserImageAsync(long userId);
     ValueTask<UserImageForResultDto> GetUserImageAsync(long userId);
+    ValueTask<UserForResultDto> CheckUserAsync(string username, string password = null);
     ValueTask<UserForResultDto> UserVerify(string code);
 }

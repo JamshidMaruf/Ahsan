@@ -1,5 +1,6 @@
 ﻿using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ahsan.WebApi.Controllers;
@@ -46,6 +47,8 @@ public class UsersController : BaseController
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    
+    [Authorize(Roles = "Admin")]
     [HttpDelete("delete/{id:long}")]
     public async Task<IActionResult> DeleteCompany(long id)
         => Ok(new
@@ -73,8 +76,9 @@ public class UsersController : BaseController
     /// Get user list
     /// </summary>
     /// <returns></returns>
+    [Authorize(Roles = "User")]
     [HttpGet("get-list")]
-    public async Task<IActionResult> GetAllCompany()
+    public async Task<IActionResult> GetAllUsers()
         => Ok(new
         {
             Code = 200,
