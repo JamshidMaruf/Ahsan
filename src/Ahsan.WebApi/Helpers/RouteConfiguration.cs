@@ -2,6 +2,7 @@
 
 namespace Ahsan.WebApi.Helpers;
 
+#pragma warning disable
 public class RouteConfiguration : IOutboundParameterTransformer
 {
     public string TransformOutbound(object value)

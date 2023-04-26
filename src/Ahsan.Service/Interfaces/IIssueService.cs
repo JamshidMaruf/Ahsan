@@ -1,4 +1,5 @@
-﻿using Ahsan.Domain.Entities;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Issues;
 using System.Linq.Expressions;
 
@@ -10,6 +11,5 @@ public interface IIssueService
     ValueTask<IssueForResultDto> UpdateAsync(IssueForUpdateDto dto);
     ValueTask<bool> DeleteAsync(long id);
     ValueTask<IssueForResultDto> GetByIdAsync(long id);
-    ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(
-        Expression<Func<Issue, bool>> expression = null, string search = null);
+    ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(PaginationParams @params, string search = null);
 }

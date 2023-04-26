@@ -32,7 +32,7 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-//Convert  Api url name to dash case 
+//Convert Api url name to dash case 
 builder.Services.AddControllers(options =>
     options.Conventions.Add(
         new RouteTokenTransformerConvention(new RouteConfiguration())));

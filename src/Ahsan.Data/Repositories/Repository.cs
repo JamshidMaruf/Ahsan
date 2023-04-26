@@ -26,9 +26,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : Auditabl
 
     public async ValueTask<bool> DeleteAsync(TEntity entity)
     {
-        var existEntity = this.dbSet.FirstOrDefaultAsync(t => t.Id.Equals(entity.Id));
+        var existEntity = await this.dbSet.FirstOrDefaultAsync(t => t.Id.Equals(entity.Id));
         if (existEntity is null) return false;
-        this.dbSet.Remove(entity);
+        existEntity.IsDeleted = true;
         return true;
     }
 

@@ -40,6 +40,5 @@ public interface ICompanyService
     /// <param name="expression"></param>
     /// <param name="search"></param>
     /// <returns></returns>
-    ValueTask<IEnumerable<CompanyForResultDto>> GetAllAsync(
-        Expression<Func<Company, bool>> expression = null, string search = null);
+    ValueTask<List<CompanyForResultDto>> GetAllAsync(string search = null);
 }

@@ -11,23 +11,29 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        //User
+        // User
         CreateMap<User, UserForCreationDto>().ReverseMap();
         CreateMap<User, UserForResultDto>().ReverseMap();
         CreateMap<User, UserForUpdateDto>().ReverseMap();
         CreateMap<UserForCreationDto, UserForUpdateDto>().ReverseMap();
         CreateMap<UserImage, UserImageForResultDto>().ReverseMap();
 
-        //Position
+        // Position
         CreateMap<Position, PositionForCreationDto>().ReverseMap();
         CreateMap<Position, PositionForResultDto>().ReverseMap();
 
-        //Company
+        // Company
         CreateMap<Company, CompanyForCreationDto>().ReverseMap();
         CreateMap<Company, CompanyForResultDto>().ReverseMap();
+        CreateMap<Company, CompanyForUpdateDto>().ReverseMap();
 
-        //IssueCategory
+        // IssueCategory
         CreateMap<IssueCategory, IssueCategoryForCreationDto>().ReverseMap();
         CreateMap<IssueCategory, IssueCategoryForResultDto>().ReverseMap();
+
+        // Issue
+        CreateMap<Issue, IssueForCreationDto>().ReverseMap();
+        CreateMap<Issue, IssueForResultDto > ().ReverseMap();
+
     }
 }

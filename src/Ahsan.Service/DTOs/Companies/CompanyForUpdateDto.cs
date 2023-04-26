@@ -9,4 +9,7 @@ public class CompanyForUpdateDto
 
     [Required]
     public string Name { get; set; }
+
+    [Required]
+    public long OwnerId { get; set; }
 }
