@@ -7,14 +7,14 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace Ahsan.Service.Services
+namespace Ahsan.Service.Services;
+
+public class IssueService : IIssueService
 {
-    public class IssueService : IIssueService
-    {
-        private readonly IRepository<Issue> _issueRepository;
-        private readonly IIssueCategoryService _issueCategoryService;
-        private readonly IUserService _userService;
-        private readonly IMapper _mapper;
+    private readonly IRepository<Issue> _issueRepository;
+    private readonly IIssueCategoryService _issueCategoryService;
+    private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
         public IssueService(
             IRepository<Issue> repository,
@@ -47,8 +47,8 @@ namespace Ahsan.Service.Services
                     var result = await this._issueRepository.InsertAsync(mappedUser);
                     await this._issueRepository.SaveChangesAsync();
 
-                    return this._mapper.Map<IssueForResultDto>(result);
-                }
+                return this._mapper.Map<IssueForResultDto>(result);
+            }
 
                 catch (Exception)
                 {
@@ -70,26 +70,26 @@ namespace Ahsan.Service.Services
                 throw new CustomException(404, "Issue not found");
             }
 
-            await _issueRepository.DeleteAsync(issue);
+        await _issueRepository.DeleteAsync(issue);
 
-            await this._issueRepository.SaveChangesAsync();
+        await this._issueRepository.SaveChangesAsync();
 
-            return true;
-        }
+        return true;
+    }
 
-        public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(Expression<Func<Issue, bool>> expression = null, string search = null)
-        {
-            var issues = this._issueRepository.GetAll(expression, new string[] { "IssueCategory", "Company", "CompanyEmployee" }, isTracking: false);
+    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(Expression<Func<Issue, bool>> expression = null, string search = null)
+    {
+        var issues = this._issueRepository.GetAll(expression, new string[] { "IssueCategory", "Company", "CompanyEmployee" }, isTracking: false);
 
             var matchingIssues = await issues.Where(
                 c => c.Title.ToLower() == search ||
                 c.Description.Contains(search)).ToListAsync();
 
-            try
-            {
-                var result = _mapper.Map<IEnumerable<IssueForResultDto>>(matchingIssues);
-                return result;
-            }
+        try
+        {
+            var result = _mapper.Map<IEnumerable<IssueForResultDto>>(matchingIssues);
+            return result;
+        }
 
             catch
             {
@@ -104,11 +104,11 @@ namespace Ahsan.Service.Services
             if (issue is null)
                 throw new CustomException(404, "Issue not found");
 
-            try
-            {
-                var result = _mapper.Map<IssueForResultDto>(issue);
-                return result;
-            }
+        try
+        {
+            var result = _mapper.Map<IssueForResultDto>(issue);
+            return result;
+        }
 
             catch
             {
@@ -125,15 +125,14 @@ namespace Ahsan.Service.Services
                 throw new CustomException(404, "Issue not found");
             }
 
-            var issue = _mapper.Map<Issue>(dto);
+        var issue = _mapper.Map<Issue>(dto);
 
-            issue.UpdatedAt = DateTime.UtcNow;
+        issue.UpdatedAt = DateTime.UtcNow;
 
-            await this._issueRepository.UpdateAsync(issue);
+        await this._issueRepository.UpdateAsync(issue);
 
-            await this._issueRepository.SaveChangesAsync();
+        await this._issueRepository.SaveChangesAsync();
 
-            return _mapper.Map<IssueForResultDto>(issue);
-        }
+        return _mapper.Map<IssueForResultDto>(issue);
     }
 }
