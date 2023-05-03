@@ -1,5 +1,4 @@
 ﻿using Ahsan.Service.DTOs.Positions;
-using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

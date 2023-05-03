@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ahsan.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230418143107_AddUserImage")]
-    partial class AddUserImage
+    [Migration("20230501154712_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -312,7 +312,8 @@ namespace Ahsan.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("UserImages");
                 });
@@ -322,7 +323,7 @@ namespace Ahsan.Data.Migrations
                     b.HasOne("Ahsan.Domain.Entities.User", "Owner")
                         .WithMany("Companies")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Owner");
@@ -333,19 +334,19 @@ namespace Ahsan.Data.Migrations
                     b.HasOne("Ahsan.Domain.Entities.Company", "Company")
                         .WithMany("Employees")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.HasOne("Ahsan.Domain.Entities.User", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Ahsan.Domain.Entities.Position", "Position")
                         .WithMany()
                         .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -360,19 +361,19 @@ namespace Ahsan.Data.Migrations
                     b.HasOne("Ahsan.Domain.Entities.CompanyEmployee", "AssignedUser")
                         .WithMany("Assignments")
                         .HasForeignKey("AssignedId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.HasOne("Ahsan.Domain.Entities.IssueCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Ahsan.Domain.Entities.Company", "Company")
                         .WithMany("Issues")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("AssignedUser");
@@ -387,7 +388,7 @@ namespace Ahsan.Data.Migrations
                     b.HasOne("Ahsan.Domain.Entities.Company", "Company")
                         .WithMany("IssueCategories")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -396,8 +397,8 @@ namespace Ahsan.Data.Migrations
             modelBuilder.Entity("Ahsan.Domain.Entities.UserImage", b =>
                 {
                     b.HasOne("Ahsan.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne()
+                        .HasForeignKey("Ahsan.Domain.Entities.UserImage", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
