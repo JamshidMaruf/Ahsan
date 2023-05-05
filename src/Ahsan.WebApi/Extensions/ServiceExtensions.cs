@@ -20,6 +20,7 @@ public static class ServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IPositionService, PositionService>();
         services.AddScoped<IIssueCategoryService, IssueCategoryService>();
+        services.AddScoped<ICompanyEmployeeService, CompanyEmployeeService>();
         services.AddScoped<IIssueService, IssueService>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     }

@@ -49,6 +49,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+//  middleware 
 app.UseMiddleware<ExeptionHandlerMiddleWare>();
 
 app.UseAuthentication();

@@ -13,10 +13,9 @@ namespace Ahsan.Service.DTOs.CompanyEmployees
 
         public CompanyForResultDto Company { get; set; }
 
-        public long PositionId { get; set; }
         public PositionForResultDto Position { get; set; }
 
         public UserPermission Permission { get; set; }
-        public List<IssueForResultDto> Assignments { get; set; }
+        public List<IssueForEmployeeDto> Assignments { get; set; }
     }
 }

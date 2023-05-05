@@ -1,5 +1,6 @@
 ﻿using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Companies;
+using Ahsan.Service.DTOs.CompanyEmployees;
 using Ahsan.Service.DTOs.Issues;
 using Ahsan.Service.DTOs.Positions;
 using Ahsan.Service.DTOs.Users;
@@ -33,7 +34,14 @@ public class MappingProfile : Profile
 
         // Issue
         CreateMap<Issue, IssueForCreationDto>().ReverseMap();
-        CreateMap<Issue, IssueForResultDto > ().ReverseMap();
+        CreateMap<Issue, IssueForResultDto>().ReverseMap();
+        CreateMap<Issue, IssueForUpdateDto>().ReverseMap();
+        CreateMap<Issue, IssueForEmployeeDto>().ReverseMap();
 
+        // Employee
+        CreateMap<CompanyEmployee, CompanyEmployeeForCreationDto>().ReverseMap();
+        CreateMap<CompanyEmployee, CompanyEmployeeForResultDto>().ReverseMap();
+        CreateMap<CompanyEmployee, CompanyEmployeeForUpdateDto>().ReverseMap();
+            
     }
 }

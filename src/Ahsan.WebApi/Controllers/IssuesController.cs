@@ -50,7 +50,7 @@ namespace Ahsan.WebApi.Controllers
              });
 
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetAllIssues(PaginationParams @params, string search = null)
+        public async Task<IActionResult> GetAllIssues([FromQuery]PaginationParams @params, string search = null)
              => Ok(new
              {
                  Code = 200,
