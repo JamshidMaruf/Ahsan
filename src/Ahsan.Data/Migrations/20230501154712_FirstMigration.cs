@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Ahsan.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class AddUserImage : Migration
+    public partial class FirstMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -73,7 +74,8 @@ namespace Ahsan.Data.Migrations
                         name: "FK_Companyies_Users_OwnerId",
                         column: x => x.OwnerId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -125,17 +127,20 @@ namespace Ahsan.Data.Migrations
                         name: "FK_CompanyEmployees_Companyies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companyies",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_CompanyEmployees_Positions_PositionId",
                         column: x => x.PositionId,
                         principalTable: "Positions",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CompanyEmployees_Users_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,7 +164,8 @@ namespace Ahsan.Data.Migrations
                         name: "FK_IssueCategories_Companyies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companyies",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -188,17 +194,20 @@ namespace Ahsan.Data.Migrations
                         name: "FK_Issues_CompanyEmployees_AssignedId",
                         column: x => x.AssignedId,
                         principalTable: "CompanyEmployees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Issues_Companyies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companyies",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Issues_IssueCategories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "IssueCategories",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -244,7 +253,8 @@ namespace Ahsan.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_UserImages_UserId",
                 table: "UserImages",
-                column: "UserId");
+                column: "UserId",
+                unique: true);
         }
 
         /// <inheritdoc />

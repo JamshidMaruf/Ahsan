@@ -48,7 +48,7 @@ public class PositionService : IPositionService
     {
         var positions = positionRepository.SelectAll(expression, isTracking: false);
         var result = mapper.Map<IEnumerable<PositionForResultDto>>(positions);
-        if (string.IsNullOrEmpty(search))
+        if (!string.IsNullOrEmpty(search))
             return result
                 .Where(u => u.Name.ToLower().Contains(search.ToLower())).ToList();
         return result;
