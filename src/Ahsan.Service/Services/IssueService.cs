@@ -1,138 +1,88 @@
-﻿//using Ahsan.Data.IRepositories;
-//using Ahsan.Domain.Entities;
-//using Ahsan.Service.DTOs.Issues;
-//using Ahsan.Service.Exceptions;
-//using Ahsan.Service.Interfaces;
-//using AutoMapper;
-//using Microsoft.EntityFrameworkCore;
-//using System.Linq.Expressions;
+﻿using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Configurations;
+using Ahsan.Domain.Entities;
+using Ahsan.Service.DTOs.Issues;
+using Ahsan.Service.Exceptions;
+using Ahsan.Service.Extensions;
+using Ahsan.Service.Interfaces;
+using AutoMapper;
 
-//namespace Ahsan.Service.Services;
+namespace Ahsan.Service.Services;
 
-//public class IssueService : IIssueService
-//{
-//    private readonly IRepository<Issue> _issueRepository;
-//    private readonly IIssueCategoryService _issueCategoryService;
-//    private readonly IUserService _userService;
-//    private readonly IMapper _mapper;
+public class IssueService : IIssueService
+{
+    private readonly IMapper mapper;
+    private readonly IUserService userService;
+    private readonly IRepository<Issue> issueRepository;
+    private readonly IIssueCategoryService issueCategoryService;
 
-//        public IssueService(
-//            IRepository<Issue> repository,
-//            IIssueCategoryService issueCategoryService,
-//            IUserService userService,
-//            IMapper mapper
-//            )
-//        {
-//            this._issueRepository = repository;
-//            this._issueCategoryService = issueCategoryService;
-//            this._userService = userService;
-//            this._mapper = mapper;
-//        }
-//        public async ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto)
-//        {
-//            var issue = await this._issueRepository.GetAsync(u => u.Title == dto.Title);
+    public IssueService(
+        IMapper mapper,
+        IUserService userService,
+        IRepository<Issue> repository,
+        IIssueCategoryService issueCategoryService
+        )
+    {
+        this.mapper = mapper;
+        this.userService = userService;
+        this.issueRepository = repository;
+        this.issueCategoryService = issueCategoryService;
+    }
+    public async ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto)
+    {
+        var CountOfCompanyIssues = this.issueRepository.SelectAll(t => t.CompanyId == dto.CompanyId).Count();
+        var issue = this.mapper.Map<Issue>(dto);
+        issue.Code = ++CountOfCompanyIssues;
+        issue.CreatedAt = DateTime.UtcNow;
+        var createdIssue = await this.issueRepository.InsertAsync(issue);
+        await this.issueRepository.SaveChangesAsync();
+        return this.mapper.Map<IssueForResultDto>(createdIssue);
+    }
 
-//            if (issue is not null)
-//            {
-//                throw new CustomException(403, "issue already exist");
-//            }
+    public async ValueTask<bool> DeleteAsync(long id)
+    {
+        var issue = await this.issueRepository.SelectAsync(i => i.Id == id && !i.IsDeleted);
+        if (issue is null)
+            throw new CustomException(404, "Issue is not found");
 
-//            var user = await this._userService.GetByIdAsync(dto.AssignedId);
-//            var issueCategory = await this._issueCategoryService.GetByIdAsync(dto.CategoryId);
-//            if (user is not null && issueCategory is not null)
-//            {
-//                Issue mappedUser = _mapper.Map<Issue>(dto);
-//                try
-//                {
-//                    var result = await this._issueRepository.InsertAsync(mappedUser);
-//                    await this._issueRepository.SaveChangesAsync();
+        await issueRepository.DeleteAsync(issue);
+        await this.issueRepository.SaveChangesAsync();
+        return true;
+    }
 
-//                return this._mapper.Map<IssueForResultDto>(result);
-//            }
+    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(PaginationParams @params, string search = null)
+    {
+        var issues = this.issueRepository
+            .SelectAll(t => !t.IsDeleted, includes: new string[] { "IssueCategory", "Company", "CompanyEmployee" }, isTracking: false);
+        if (!string.IsNullOrEmpty(search))
+        {
+            var matchingIssues = issues
+                    .Where(t => !t.IsDeleted)
+                    .Where(t => t.Title.ToLower() == search || t.Description.Contains(search));
+            return (IEnumerable<IssueForResultDto>)matchingIssues.ToPagedList(@params);
+        }
+        return (IEnumerable<IssueForResultDto>)issues.ToPagedList(@params);
+    }
 
-//                catch (Exception)
-//                {
-//                    throw new CustomException(500, "Something went wrong");
-//                }
-//            }
-//            else
-//            {
-//                throw new CustomException(400, "Try again!");
-//            }
-//        }
+    public async ValueTask<IssueForResultDto> GetByIdAsync(long id)
+    {
+        var issue = await this.issueRepository.SelectAsync(i => i.Id == id && !i.IsDeleted);
+        if (issue is null)
+            throw new CustomException(404, "Issue is not found");
 
-//        public async ValueTask<bool> DeleteAsync(long id)
-//        {
-//            var issue = await this._issueRepository.GetAsync(i => i.Id == id);
+            return this.mapper.Map<IssueForResultDto>(issue);
+    }
 
-//            if (issue is null)
-//            {
-//                throw new CustomException(404, "Issue not found");
-//            }
+    public async ValueTask<IssueForResultDto> UpdateAsync(IssueForUpdateDto dto)
+    {
+        var updatingIssue = await this.issueRepository.SelectAsync(u => u.Id == dto.Id && !u.IsDeleted);
+        if (updatingIssue is null)
+            throw new CustomException(404, "Issue is not found");
 
-//        await _issueRepository.DeleteAsync(issue);
-
-//        await this._issueRepository.SaveChangesAsync();
-
-//        return true;
-//    }
-
-//    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(Expression<Func<Issue, bool>> expression = null, string search = null)
-//    {
-//        var issues = this._issueRepository.GetAll(expression, new string[] { "IssueCategory", "Company", "CompanyEmployee" }, isTracking: false);
-
-//            var matchingIssues = await issues.Where(
-//                c => c.Title.ToLower() == search ||
-//                c.Description.Contains(search)).ToListAsync();
-
-//        try
-//        {
-//            var result = _mapper.Map<IEnumerable<IssueForResultDto>>(matchingIssues);
-//            return result;
-//        }
-
-//            catch
-//            {
-//                throw new CustomException(500, "Something went wromg");
-//            }
-//        }
-
-//        public async ValueTask<IssueForResultDto> GetByIdAsync(long id)
-//        {
-//            var issue = await this._issueRepository.GetAsync(i => i.Id == id);
-
-//            if (issue is null)
-//                throw new CustomException(404, "Issue not found");
-
-//        try
-//        {
-//            var result = _mapper.Map<IssueForResultDto>(issue);
-//            return result;
-//        }
-
-//            catch
-//            {
-//                throw new CustomException(500, "Something went wrong");
-//            }
-//        }
-
-//        public async ValueTask<IssueForResultDto> UpdateAsync(IssueForUpdateDto dto)
-//        {
-//            var updatingIssue = await this._issueRepository.GetAsync(u => u.Id == dto.Id);
-
-//            if (updatingIssue is null)
-//            {
-//                throw new CustomException(404, "Issue not found");
-//            }
-
-//        var issue = _mapper.Map<Issue>(dto);
-
-//        issue.UpdatedAt = DateTime.UtcNow;
-
-//        await this._issueRepository.UpdateAsync(issue);
-
-//        await this._issueRepository.SaveChangesAsync();
-
-//        return _mapper.Map<IssueForResultDto>(issue);
-//    }
-//}
+        var issue = mapper.Map(dto, updatingIssue);
+        issue.UpdatedAt = DateTime.UtcNow;
+        await this.issueRepository.UpdateAsync(issue);
+        await this.issueRepository.SaveChangesAsync();
+        return mapper.Map<IssueForResultDto>(issue);
+    }
+}
