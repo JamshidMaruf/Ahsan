@@ -2,6 +2,8 @@
 using Ahsan.Data.Repositories;
 using Ahsan.Service.Interfaces;
 using Ahsan.Service.Services;
+using Ahsan.Service.Validators.Companies;
+using Ahsan.Service.Validators.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -22,6 +24,8 @@ public static class ServiceExtensions
         services.AddScoped<IIssueCategoryService, IssueCategoryService>();
         services.AddScoped<ICompanyEmployeeService, CompanyEmployeeService>();
         services.AddScoped<IIssueService, IssueService>();
+        services.AddScoped<CompanyCreateValidator>();
+        services.AddScoped<UserCreateValidator>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     }
     #endregion

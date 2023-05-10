@@ -4,9 +4,9 @@ using Ahsan.Service.DTOs.Companies;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
 using Ahsan.Service.Interfaces;
+using Ahsan.Service.Validators.Companies;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 #pragma warning disable
 namespace Ahsan.Service.Services;
@@ -15,19 +15,26 @@ public class CompanyService : ICompanyService
 {
     private readonly IMapper mapper;
     private readonly IRepository<User> userRepository;
+    private readonly CompanyCreateValidator validator;
     private readonly IRepository<Company> companyRepository;
     public CompanyService(
         IMapper mapper,
         IRepository<User> userRepository,
+        CompanyCreateValidator validator,
         IRepository<Company> companyRepository)
     {
         this.mapper = mapper;
+        this.validator = validator;
         this.userRepository = userRepository;
         this.companyRepository = companyRepository;
     }
 
     public async ValueTask<CompanyForResultDto> CreateAsync(CompanyForCreationDto dto)
     {
+        var validatorResult = await validator.ValidateAsync(dto);
+        if (validatorResult.Errors.Any())
+            throw new CustomException(400, validatorResult.Errors.First().ErrorMessage);
+
         Company company = await this.companyRepository
             .SelectAsync(c => c.Name.ToLower() == dto.Name.ToLower() && !c.IsDeleted);
         if (company is not null)
@@ -35,13 +42,15 @@ public class CompanyService : ICompanyService
 
         var user = await this.userRepository
             .SelectAsync(t => t.Id.Equals(dto.OwnerId) && !t.IsDeleted);
-        if(user is null)
+        if (user is null)
             throw new CustomException(404, "User is not found");
+
+
 
         Company mappedCompany = this.mapper.Map<Company>(dto);
         Company createdCompany = await this.companyRepository.InsertAsync(mappedCompany);
         await this.companyRepository.SaveChangesAsync();
-        
+
         var result = this.mapper.Map<CompanyForResultDto>(createdCompany);
         result.Owner = this.mapper.Map<UserForResultDto>(user);
         return result;
@@ -65,11 +74,11 @@ public class CompanyService : ICompanyService
             .SelectAll(t => !t.IsDeleted, isTracking: false)
             .Include(t => t.Owner);
 
-        var result = 
+        var result =
             mapper.Map<List<CompanyForResultDto>>(companies);
 
         if (!string.IsNullOrEmpty(search))
-            return result.Where(c => 
+            return result.Where(c =>
                 c.Name.ToLower().Contains(search.ToLower())).ToList();
         return result;
     }
