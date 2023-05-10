@@ -1,4 +1,4 @@
-﻿using Ahsan.Domain.Entities;
+﻿using Ahsan.Service.DTOs.CompanyEmployees;
 
 namespace Ahsan.Service.DTOs.Issues;
 
@@ -10,5 +10,5 @@ public class IssueForResultDto
     public DateTime Deadline { get; set; }
     public long Code { get; set; }
     public IssueCategoryForResultDto Category { get; set; }
-    public CompanyEmployee AssignedUser { get; set; }
+    public CompanyEmployeeForResultDto AssignedUser { get; set; }
 }
