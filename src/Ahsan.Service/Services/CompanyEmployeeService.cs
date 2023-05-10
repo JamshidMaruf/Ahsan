@@ -80,7 +80,7 @@ namespace Ahsan.Service.Services
                 return matchingEmployee;
             }
 
-            return this.mapper.Map<IEnumerable<CompanyEmployeeForResultDto>>(result);
+            return result;
         }
 
         public async ValueTask<CompanyEmployeeForResultDto> GetByIdAsync(long id)
