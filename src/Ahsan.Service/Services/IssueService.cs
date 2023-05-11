@@ -1,241 +1,107 @@
-﻿using Ahsan.Data.IRepositories;
+﻿using AutoMapper;
 using Ahsan.Domain.Entities;
-using Ahsan.Service.DTOs.Issues;
+using Ahsan.Data.IRepositories;
 using Ahsan.Service.Exceptions;
 using Ahsan.Service.Interfaces;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Ahsan.Service.DTOs.Issues;
 
 namespace Ahsan.Service.Services;
 
 public class IssueService : IIssueService
 {
-    private readonly IRepository<Issue> _issueRepository;
-    private readonly IIssueCategoryService _issueCategoryService;
-    private readonly IUserService _userService;
-    private readonly IMapper _mapper;
+    private readonly IMapper mapper;
+    private readonly IRepository<Issue> issueRepository;
+    private readonly ICompanyEmployeeService employeeService;
+    private readonly IIssueCategoryService issueCategoryService;
 
     public IssueService(
+        IMapper mapper,
         IRepository<Issue> repository,
+        ICompanyEmployeeService employeeService,
         IIssueCategoryService issueCategoryService,
-        IUserService userService,
-        IMapper mapper
-        )
+        IRepository<User> userRepository)
     {
-        this._issueRepository = repository;
-        this._issueCategoryService = issueCategoryService;
-        this._userService = userService;
-        this._mapper = mapper;
+        this.mapper = mapper;
+        this.issueRepository = repository;
+        this.employeeService = employeeService;
+        this.issueCategoryService = issueCategoryService;
     }
+
     public async ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto)
     {
-        var issue = await this._issueRepository.GetAsync(u => u.Title == dto.Title);
+        var CountOfCompanyIssues = this.issueRepository.SelectAll(t => t.CompanyId == dto.CompanyId).Count();
+        var issue = this.mapper.Map<Issue>(dto);
+        issue.Code = ++CountOfCompanyIssues;
+        issue.CreatedAt = DateTime.UtcNow;
+        var createdIssue = await this.issueRepository.InsertAsync(issue);
+        await this.issueRepository.SaveChangesAsync();
 
-        if (issue is not null)
-        {
-            this._issueRepository = repository;
-            this._issueCategoryService = issueCategoryService;
-            this._userService = userService;
-            this._mapper = mapper;
-        }
-        public async ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto)
-        {
-            var issue = await this._issueRepository.GetAsync(u => u.Number == dto.Number);
+        var result = this.mapper.Map<IssueForResultDto>(issue);
+        result.Category = await this.issueCategoryService.GetByIdAsync(issue.CategoryId);
+        result.AssignedUser = await this.employeeService.GetByIdAsync(issue.AssignedId);
 
-            if (issue is not null)
-            {
-                throw new AhsanException(403, "issue already exist");
-            }
-
-            var user = await this._userService.GetAsync(u => u.Id == dto.AssignedId);
-            var issueCategory = await this._issueCategoryService.GetAsync(u => u.Id == dto.CategoryId);
-            if (user is not null && issueCategory is not null)
-            {
-                Issue mappedUser = _mapper.Map<Issue>(dto);
-                try
-                {
-                    var result = await this._issueRepository.InsertAsync(mappedUser);
-                    await this._issueRepository.SaveChangesAsync();
-
-                    return this._mapper.Map<IssueForResultDto>(result);
-                }
-
-                catch (Exception)
-                {
-                    throw new AhsanException(500, "Something went wrong");
-                }
-            }
-            else
-            {
-                throw new AhsanException(400, "Try again!");
-            }
-        }
-
-        public async ValueTask<bool> DeleteAsync(Expression<Func<Issue, bool>> expression)
-        {
-            var issue = await this._issueRepository.GetAsync(expression);
-
-            if (issue is null)
-            {
-                throw new AhsanException(404, "Issue not found");
-            }
-
-            await _issueRepository.DeleteAsync(issue);
-
-            await this._issueRepository.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(Expression<Func<Issue, bool>> expression = null, string search = null)
-        {
-            var issues = this._issueRepository.GetAll(expression, new string[] { "IssueCategory", "Company", "CompanyEmployee" }, isTracking: false);
-
-            var matchingIssues = await issues.Where(
-                c => c.Title.ToLower() == search ||
-                c .Description.Contains(search) ||
-                c.Number.ToString() == search).ToListAsync();
-
-=======
-            throw new CustomException(403, "issue already exist");
-        }
-
-        var user = await this._userService.GetByIdAsync(dto.AssignedId);
-        var issueCategory = await this._issueCategoryService.GetByIdAsync(dto.CategoryId);
-        if (user is not null && issueCategory is not null)
-        {
-            Issue mappedUser = _mapper.Map<Issue>(dto);
-            try
-            {
-                var result = await this._issueRepository.InsertAsync(mappedUser);
-                await this._issueRepository.SaveChangesAsync();
-
-                return this._mapper.Map<IssueForResultDto>(result);
-            }
-
-            catch
-            {
-                throw new AhsanException(500, "Something went wromg");
-            }
-        }
-
-        public async ValueTask<IssueForResultDto> GetAsync(Expression<Func<Issue, bool>> expression)
-        {
-            var issue = await this._issueRepository.GetAsync(expression);
-
-            if (issue is null)
-                throw new AhsanException(404, "Issue not found");
-
-            try
-            {
-                var result = _mapper.Map<IssueForResultDto>(issue);
-                return result;
-            }
-
-            catch
-            catch (Exception)
-            {
-                throw new AhsanException(500, "Something went wrong");
-            }
-        }
-
-        public async ValueTask<IssueForResultDto> UpdateAsync(long id, IssueForCreationDto dto)
-        {
-            var updatingIssue = await this._issueRepository.GetAsync(u => u.Id == id);
-
-            if (updatingIssue is null)
-            {
-                throw new AhsanException(404, "Issue not found");
-            }
-
-            var issue = _mapper.Map<Issue>(dto);
-
-            issue.UpdatedAt = DateTime.UtcNow;
-
-            await this._issueRepository.UpdateAsync(issue);
-
-            await this._issueRepository.SaveChangesAsync();
-
-            return _mapper.Map<IssueForResultDto>(issue);
-        else
-        {
-            throw new CustomException(400, "Try again!");
-        }
+        return result;
     }
 
     public async ValueTask<bool> DeleteAsync(long id)
     {
-        var issue = await this._issueRepository.GetAsync(i => i.Id == id);
-
+        var issue = await this.issueRepository.SelectAsync(i => i.Id == id && !i.IsDeleted);
         if (issue is null)
-        {
-            throw new CustomException(404, "Issue not found");
-        }
+            throw new CustomException(404, "Issue is not found");
 
-        await _issueRepository.DeleteAsync(issue);
-
-        await this._issueRepository.SaveChangesAsync();
-
+        await issueRepository.DeleteAsync(issue);
+        await this.issueRepository.SaveChangesAsync();
         return true;
     }
 
-    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(Expression<Func<Issue, bool>> expression = null, string search = null)
+    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(string search = null)
     {
-        var issues = this._issueRepository.GetAll(expression, new string[] { "IssueCategory", "Company", "CompanyEmployee" }, isTracking: false);
+        var issues = this.issueRepository.SelectAll(t => !t.IsDeleted, isTracking: false);
+        var results = this.mapper.Map<IEnumerable<IssueForResultDto>>(issues);
 
-        var matchingIssues = await issues.Where(
-            c => c.Title.ToLower() == search ||
-            c.Description.Contains(search)).ToListAsync();
-
-        try
+        if (!string.IsNullOrEmpty(search))
         {
-            var result = _mapper.Map<IEnumerable<IssueForResultDto>>(matchingIssues);
-            return result;
+            var matchingIssues = results
+                    .Where(t => t.Title.ToLower() == search || t.Description.Contains(search));
+            return matchingIssues;
         }
 
-        catch
+        foreach (var item in results)
         {
-            throw new CustomException(500, "Something went wromg");
+            item.AssignedUser = await employeeService.GetByIdAsync(item.AssignedId);
+            item.Category = await issueCategoryService.GetByIdAsync(item.CategoryId);
         }
+        return results;
     }
 
     public async ValueTask<IssueForResultDto> GetByIdAsync(long id)
     {
-        var issue = await this._issueRepository.GetAsync(i => i.Id == id);
-
+        var issue = await this.issueRepository.SelectAsync(i => i.Id == id && !i.IsDeleted);
         if (issue is null)
-            throw new CustomException(404, "Issue not found");
+            throw new CustomException(404, "Issue is not found");
 
-        try
-        {
-            var result = _mapper.Map<IssueForResultDto>(issue);
-            return result;
-        }
+        var result = this.mapper.Map<IssueForResultDto>(issue);
+        result.Category = await this.issueCategoryService.GetByIdAsync(issue.CategoryId);
+        result.AssignedUser = await this.employeeService.GetByIdAsync(issue.AssignedId);
 
-        catch
-        {
-            throw new CustomException(500, "Something went wrong");
-        }
+        return result;
     }
 
     public async ValueTask<IssueForResultDto> UpdateAsync(IssueForUpdateDto dto)
     {
-        var updatingIssue = await this._issueRepository.GetAsync(u => u.Id == dto.Id);
-
+        var updatingIssue = await this.issueRepository.SelectAsync(u => u.Id == dto.Id && !u.IsDeleted);
         if (updatingIssue is null)
-        {
-            throw new CustomException(404, "Issue not found");
-        }
+            throw new CustomException(404, "Issue is not found");
 
-        var issue = _mapper.Map<Issue>(dto);
-
+        var issue = mapper.Map(dto, updatingIssue);
         issue.UpdatedAt = DateTime.UtcNow;
+        await this.issueRepository.UpdateAsync(issue);
+        await this.issueRepository.SaveChangesAsync();
 
-        await this._issueRepository.UpdateAsync(issue);
+        var result = this.mapper.Map<IssueForResultDto>(issue);
+        result.Category = await this.issueCategoryService.GetByIdAsync(issue.CategoryId);
+        result.AssignedUser = await this.employeeService.GetByIdAsync(issue.AssignedId);
 
-        await this._issueRepository.SaveChangesAsync();
-
-        return _mapper.Map<IssueForResultDto>(issue);
+        return result;
     }
 }
