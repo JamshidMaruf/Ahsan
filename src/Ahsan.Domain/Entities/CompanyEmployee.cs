@@ -13,7 +13,7 @@ public class CompanyEmployee : Auditable
 
     public long PositionId { get; set; }
     public Position Position { get; set; }
-    public UserPermission Permission { get; set; }
 
+    public UserPermission Permission { get; set; }
     public ICollection<Issue> Assignments { get; set; }
 }

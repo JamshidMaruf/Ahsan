@@ -1,14 +1,9 @@
-﻿using MailKit.Security;
-using MimeKit.Text;
-using MimeKit;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ahsan.Domain.Entities;
+﻿using Ahsan.Service.Exceptions;
+using MailKit.Security;
 using Microsoft.Extensions.Configuration;
+using MimeKit;
+using MimeKit.Text;
+using StackExchange.Redis;
 
 namespace Ahsan.Service.Helpers;
 
@@ -19,7 +14,8 @@ public class EmailVerification
     {
         this.configuration = configuration.GetSection("Email");
     }
-    public async Task<string> SendAsync(User user)
+
+    public async Task<string> SendAsync(string to)
     {
         try
         {
@@ -33,9 +29,9 @@ public class EmailVerification
 
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(this.configuration["EmailAddress"]));
-            email.To.Add(MailboxAddress.Parse(user.Email));
+            email.To.Add(MailboxAddress.Parse(to));
             email.Subject = "Email verification Ahsan.uz";
-            email.Body = new TextPart(TextFormat.Html) { Text = result.ToString() };
+            email.Body = new TextPart(TextFormat.Html) { Text = verificationCode.ToString() };
 
             var sendMessage = new MailKit.Net.Smtp.SmtpClient();
             await sendMessage.ConnectAsync(this.configuration["Host"], 587, SecureSocketOptions.StartTls);
@@ -43,11 +39,11 @@ public class EmailVerification
             await sendMessage.SendAsync(email);
             await sendMessage.DisconnectAsync(true);
 
-            return result.ToString();
+            return verificationCode.ToString();
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            throw new CustomException(400, ex.Message);
         }
     }
 }

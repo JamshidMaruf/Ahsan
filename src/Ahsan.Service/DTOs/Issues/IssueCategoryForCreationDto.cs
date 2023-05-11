@@ -1,11 +1,12 @@
-﻿using Ahsan.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Ahsan.Service.DTOs.Issues
+namespace Ahsan.Service.DTOs.Issues;
+
+public class IssueCategoryForCreationDto
 {
-    public class IssueCategoryForCreationDto
-    {
-        public string Name { get; set; }
-        public long CompanyId { get; set; }
-        public Company Company { get; set; }
-    }
+    [Required]
+    public string Name { get; set; }
+
+    [Required]
+    public long CompanyId { get; set; }
 }

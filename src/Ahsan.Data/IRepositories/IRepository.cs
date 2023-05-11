@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace Ahsan.Data.IRepositories
 {
     public interface IRepository<TEntity>
     {
-        IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> expression = null, string[] includes = null, bool isTracking = true);
         ValueTask<TEntity> InsertAsync(TEntity entity);
-        ValueTask<TEntity> GetAsync(Expression<Func<TEntity, bool>> expression, string[] includes = null);
         ValueTask<TEntity> UpdateAsync(TEntity entity);
         ValueTask<bool> DeleteAsync(TEntity entity);
         ValueTask SaveChangesAsync();
+        IQueryable<TEntity> SelectAll(
+            Expression<Func<TEntity, bool>> expression = null, string[] includes = null, bool isTracking = true);
+        ValueTask<TEntity> SelectAsync(Expression<Func<TEntity, bool>> expression, string[] includes = null);
     }
 }

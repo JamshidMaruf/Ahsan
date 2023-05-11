@@ -2,14 +2,43 @@
 using Ahsan.Service.DTOs.Companies;
 using System.Linq.Expressions;
 
-namespace Ahsan.Service.Interfaces
+namespace Ahsan.Service.Interfaces;
+
+public interface ICompanyService
 {
-    public interface ICompanyService
-    {
-        ValueTask<CompanyForResultDto> CreateAsync(CompanyForCreationDto dto);
-        ValueTask<CompanyForResultDto> UpdateAsync(long id, CompanyForResultDto dto);
-        ValueTask<CompanyForResultDto> GetAsync(Expression<Func<Company, bool>> expression);
-        ValueTask<IEnumerable<CompanyForResultDto>> GetAllAsync(Expression<Func<Company, bool>> expression = null, string search = null);
-        ValueTask<bool> DeleteAsync(Expression<Func<Company, bool>> expression);
-    }
+    /// <summary>
+    /// Create company
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    ValueTask<CompanyForResultDto> CreateAsync(CompanyForCreationDto dto);
+
+    /// <summary>
+    /// Update company
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    ValueTask<CompanyForResultDto> ModifyAsync(CompanyForUpdateDto dto);
+
+    /// <summary>
+    /// Delete company with given id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    ValueTask<bool> DeleteAsync(long companyId);
+
+    /// <summary>
+    /// Get company via given id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    ValueTask<CompanyForResultDto> GetByIdAsync(long companyId);
+
+    /// <summary>
+    /// Get company list
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <param name="search"></param>
+    /// <returns></returns>
+    ValueTask<List<CompanyForResultDto>> GetAllAsync(string search = null);
 }

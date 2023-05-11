@@ -1,11 +1,9 @@
-﻿using Ahsan.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Ahsan.Service.DTOs.Companies
+namespace Ahsan.Service.DTOs.Companies;
+
+public class CompanyForCreationDto
 {
-    public class CompanyForCreationDto
-    {
-        public string Name { get; set; }
-        public long OwnerId { get; set; }
-        public User Owner { get; set; }
-    }
+    public string Name { get; set; }
+    public long OwnerId { get; set; }
 }

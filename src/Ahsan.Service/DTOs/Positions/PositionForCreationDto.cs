@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Ahsan.Service.DTOs.Positions
+namespace Ahsan.Service.DTOs.Positions;
+
+public class PositionForCreationDto
 {
-    public class PositionForCreationDto
-    {
-        [Required, MaxLength(50)]
-        public string Name { get; set; }
-    }
+    [Required]
+    public string Name { get; set; }
 }

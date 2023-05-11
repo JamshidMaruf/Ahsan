@@ -1,11 +1,10 @@
-﻿using Ahsan.Domain.Entities;
+﻿using Ahsan.Service.DTOs.Companies;
 
-namespace Ahsan.Service.DTOs.Issues
+namespace Ahsan.Service.DTOs.Issues;
+
+public class IssueCategoryForResultDto
 {
-    public class IssueCategoryForResultDto
-    {
-        public string Name { get; set; }
-        public long CompanyId { get; set; }
-        public Company Company { get; set; }
-    }
+    public long Id { get; set; }
+    public string Name { get; set; }
+    public CompanyForResultDto Company { get; set; }
 }

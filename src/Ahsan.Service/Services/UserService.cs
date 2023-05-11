@@ -2,145 +2,181 @@
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
+using Ahsan.Service.Extensions;
+using Ahsan.Service.Helpers;
 using Ahsan.Service.Interfaces;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace Ahsan.Service.Services
+namespace Ahsan.Service.Services;
+
+public class UserService : IUserService
 {
-    public class UserService : IUserService
+    private readonly IMapper mapper;
+    private readonly IRepository<User> userRepository;
+    private readonly IRepository<UserImage> userImageRepository;
+    public UserService(
+        IMapper mapper,
+        IRepository<User> repository,
+        IRepository<UserImage> userImageRepository)
     {
-        private readonly IRepository<User> userRepository;
-        private readonly IMapper mapper;
-        public UserService(IRepository<User> repository, IMapper mapper)
+        this.mapper = mapper;
+        this.userRepository = repository;
+        this.userImageRepository = userImageRepository;
+    }
+
+    public async ValueTask<UserForResultDto> CreateAsync(UserForCreationDto dto)
+    {
+        User user = await this.userRepository.SelectAsync(u => u.Username.ToLower() == dto.Username.ToLower());
+        if (user is not null)
+            throw new CustomException(403, "User already exist with this username");
+
+        User mappedUser = mapper.Map<User>(dto);
+        var result = await this.userRepository.InsertAsync(mappedUser);
+        await this.userRepository.SaveChangesAsync();
+        return this.mapper.Map<UserForResultDto>(result);
+    }
+
+    public async ValueTask<bool> DeleteAsync(long id)
+    {
+        var user = await this.userRepository.SelectAsync(u => u.Id.Equals(id));
+        if (user is null)
+            throw new CustomException(404, "User not found");
+
+        await this.userRepository.DeleteAsync(user);
+        await this.userRepository.SaveChangesAsync();
+        return true;
+    }
+
+    public async ValueTask<IEnumerable<UserForResultDto>> GetAllAsync(
+        Expression<Func<User, bool>> expression = null, string search = null)
+    {
+        var users = userRepository.SelectAll(expression, isTracking: false);
+        var result = mapper.Map<IEnumerable<UserForResultDto>>(users);
+
+        foreach (var item in result)
+            item.Image = mapper.Map<UserImageForResultDto>(
+                await this.userImageRepository.SelectAsync(t => t.UserId.Equals(item.Id)));
+
+        if (!string.IsNullOrEmpty(search))
+            return result.Where(
+                u => u.Firstname.ToLower().Contains(search.ToLower()) ||
+                u.Lastname.ToLower().Contains(search.ToLower()) ||
+                u.Username.ToLower().Contains(search.ToLower())).ToList();
+
+        return result;
+    }
+
+    public async ValueTask<UserForResultDto> GetByIdAsync(long id)
+    {
+        var user = await userRepository.SelectAsync(u => u.Id.Equals(id));
+        if (user is null)
+            throw new CustomException(404, "User not found");
+
+        var result = mapper.Map<UserForResultDto>(user);
+        result.Image = mapper.Map<UserImageForResultDto>(
+            await this.userImageRepository.SelectAsync(t => t.UserId.Equals(result.Id)));
+
+        return result;
+    }
+
+    public async ValueTask<UserForResultDto> UpdateAsync(UserForUpdateDto dto)
+    {
+        var updatingUser = await userRepository.SelectAsync(u => u.Id.Equals(dto.Id));
+        if (updatingUser is null)
+            throw new CustomException(404, "User not found");
+
+        this.mapper.Map(dto, updatingUser);
+        updatingUser.UpdatedAt = DateTime.UtcNow;
+        await this.userRepository.SaveChangesAsync();
+
+        var result = mapper.Map<UserForResultDto>(updatingUser);
+        result.Image = mapper.Map<UserImageForResultDto>(
+           await this.userImageRepository.SelectAsync(t => t.UserId.Equals(result.Id)));
+
+        return result;
+    }
+
+    public async ValueTask<UserForResultDto> ChangePasswordAsync(UserForChangePassword dto)
+    {
+        User existUser = await userRepository.SelectAsync(u => u.Username == dto.Username);
+        if (existUser is null)
+            throw new Exception("This username is not exist");
+        else if (dto.NewPassword != dto.ComfirmPassword)
+            throw new Exception("New password and confirm password are not equal");
+        else if (existUser.Password != dto.OldPassword)
+            throw new Exception("Password is incorrect");
+
+        existUser.Password = dto.ComfirmPassword;
+        await userRepository.SaveChangesAsync();
+        return mapper.Map<UserForResultDto>(existUser);
+    }
+
+    public async ValueTask<UserImageForResultDto> ImageUploadAsync(UserImageForCreationDto dto)
+    {
+        var user = await this.userRepository.SelectAsync(t => t.Id.Equals(dto.UserId));
+        if (user is null)
+            throw new CustomException(404, "User is not found");
+
+        byte[] image = dto.Image.ToByteArray();
+        var fileExtension = Path.GetExtension(dto.Image.FileName);
+        var fileName = Guid.NewGuid().ToString("N") + fileExtension;
+        var webRootPath = EnvironmentHelper.WebHostPath;
+        var folder = Path.Combine(webRootPath, "uploads", "images");
+
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        var fullPath = Path.Combine(folder, fileName);
+        using var imageStream = new MemoryStream(image);
+
+        using var imagePath = new FileStream(fullPath, FileMode.CreateNew);
+        imageStream.WriteTo(imagePath);
+
+        var userImage = new UserImage
         {
-            this.userRepository = repository;
-            this.mapper = mapper;
-        }
-        public async ValueTask<UserForResultDto> CreateAsync(UserForCreationDto dto)
-        {
-            User user = await this.userRepository.GetAsync(u => u.Username.ToLower() == dto.Username.ToLower());
+            Name = fileName,
+            Path = fullPath,
+            UserId = dto.UserId,
+            User = user,
+            CreatedAt = DateTime.UtcNow,
+        };
 
-            if (user is not null)
-            {
-                throw new AhsanException(403, "User already exist with this username");
-            }
+        var createdImage = await this.userImageRepository.InsertAsync(userImage);
+        await this.userImageRepository.SaveChangesAsync();
+        return mapper.Map<UserImageForResultDto>(createdImage);
+    }
 
-            User mappedUser = mapper.Map<User>(dto);
+    public async ValueTask<bool> DeleteUserImageAsync(long userId)
+    {
+        var userImage = await this.userImageRepository.SelectAsync(t => t.UserId.Equals(userId));
+        if (userImage is null)
+            throw new CustomException(404, "Image is not found");
 
-            try
-            {
-                var result = await this.userRepository.InsertAsync(mappedUser);
-                await this.userRepository.SaveChangesAsync();
+        File.Delete(userImage.Path);
+        await this.userImageRepository.DeleteAsync(userImage);
+        await this.userImageRepository.SaveChangesAsync();
+        return true;
+    }
 
-                return this.mapper.Map<UserForResultDto>(result);
-            }
+    public async ValueTask<UserImageForResultDto> GetUserImageAsync(long userId)
+    {
+        var userImage = await this.userImageRepository.SelectAsync(t => t.UserId.Equals(userId));
+        if (userImage is null)
+            throw new CustomException(404, "Image is not found");
+        return mapper.Map<UserImageForResultDto>(userImage);
+    }
 
-            catch (Exception) 
-            {
-                throw new AhsanException(500, "Something went wrong");
-            }
-        }
+    public ValueTask<UserForResultDto> UserVerify(string code)
+    {
+        throw new NotImplementedException();
+    }
 
-        public async ValueTask<bool> DeleteAsync(Expression<Func<User, bool>> expression)
-        {
-            var user = await this.userRepository.GetAsync(expression);
-
-            if (user is null)
-            {
-                throw new AhsanException(404, "User not found");
-            }
-
-            await userRepository.DeleteAsync(user);
-
-            await this.userRepository.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async ValueTask<IEnumerable<UserForResultDto>> GetAllAsync(Expression<Func<User, bool>> expression = null, string search = null)
-        {
-            var users = userRepository.GetAll(expression, isTracking : false);
-
-            var matchingUsers = await users.Where(
-                u => u.Firstname.ToLower() == search ||
-                u.Lastname.ToLower() == search ||
-                u.Username.ToLower() == search).ToListAsync();
-
-            try
-            {
-                var result = mapper.Map<IEnumerable<UserForResultDto>>(matchingUsers);
-                return result;
-            }
-
-            catch
-            {
-                throw new AhsanException(500, "Something went wromg");
-            }
-        }
-
-        public async ValueTask<UserForResultDto> GetAsync(Expression<Func<User, bool>> expression)
-        {
-            var user = await userRepository.GetAsync(expression);
-
-            if (user is null)
-                throw new AhsanException(404, "User not found");
-
-            try
-            {
-                var result = mapper.Map<UserForResultDto>(user);
-                return result;
-            }
-
-            catch  
-            {
-                throw new AhsanException(500, "Something went wrong");
-            }
-        }
-
-        public async ValueTask<UserForResultDto> UpdateAsync(long id, UserForUpdateDto dto)
-        {
-            var updatingUser = await userRepository.GetAsync(u => u.Id == id);
-
-            if (updatingUser is null)
-            {
-                throw new AhsanException(404, "User not found");
-            }
-
-            var user = mapper.Map<User>(dto);
-
-            user.UpdatedAt = DateTime.UtcNow;
-
-            await userRepository.UpdateAsync(user);
-
-            await userRepository.SaveChangesAsync();
-
-            return mapper.Map<UserForResultDto>(user);
-        }
-
-        public async ValueTask<UserForResultDto> ChangePasswordAsync(UserForChangePassword dto)
-        {
-            User existUser = await userRepository.GetAsync(u => u.Username == dto.Username);
-
-            if (existUser is null)
-            {
-                throw new Exception("This username is not exist");
-            }
-            else if (dto.NewPassword != dto.ComfirmPassword)
-            {
-                throw new Exception("New password and confirm password are not equal");
-            }
-            else if (existUser.Password != dto.OldPassword)
-            {
-                throw new Exception("Password is incorrect");
-            }
-
-            existUser.Password = dto.ComfirmPassword;
-            
-            await userRepository.SaveChangesAsync();
-
-            return mapper.Map<UserForResultDto>(existUser);
-        }
+    public async ValueTask<UserForResultDto> CheckUserAsync(string username, string password = null)
+    {
+        var user = await this.userRepository.SelectAsync(t => t.Username.Equals(username));
+        if (user is null)
+            throw new CustomException(404, "User is not found");
+        return this.mapper.Map<UserForResultDto>(user);
     }
 }

@@ -1,120 +1,122 @@
 ﻿using Ahsan.Data.IRepositories;
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Companies;
+using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
 using Ahsan.Service.Interfaces;
+using Ahsan.Service.Validators.Companies;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
-namespace Ahsan.Service.Services
+#pragma warning disable
+namespace Ahsan.Service.Services;
+
+public class CompanyService : ICompanyService
 {
-    public class CompanyService : ICompanyService
+    private readonly IMapper mapper;
+    private readonly IRepository<User> userRepository;
+    private readonly CompanyCreateValidator validator;
+    private readonly IRepository<Company> companyRepository;
+    public CompanyService(
+        IMapper mapper,
+        IRepository<User> userRepository,
+        CompanyCreateValidator validator,
+        IRepository<Company> companyRepository)
     {
-        private readonly IRepository<Company> companyRepository;
-        private readonly IMapper mapper;
-        public CompanyService(IRepository<Company> repository, IMapper mapper)
-        {
-            this.companyRepository = repository;
-            this.mapper = mapper;
-        }
-        public async ValueTask<CompanyForResultDto> CreateAsync(CompanyForCreationDto dto)
-        {
-            var company = await this.companyRepository.GetAsync(c => c.Name.ToLower() == dto.Name.ToLower() && c.OwnerId == dto.OwnerId);
+        this.mapper = mapper;
+        this.validator = validator;
+        this.userRepository = userRepository;
+        this.companyRepository = companyRepository;
+    }
 
-            if (company is not null)
-            {
-                throw new AhsanException(403, "Company already exist");
-            }
+    public async ValueTask<CompanyForResultDto> CreateAsync(CompanyForCreationDto dto)
+    {
+        var validatorResult = await validator.ValidateAsync(dto);
+        if (validatorResult.Errors.Any())
+            throw new CustomException(400, validatorResult.Errors.First().ErrorMessage);
 
-            Company mappedCompany = mapper.Map<Company>(dto);
+        Company company = await this.companyRepository
+            .SelectAsync(c => c.Name.ToLower() == dto.Name.ToLower() && !c.IsDeleted);
+        if (company is not null)
+            throw new CustomException(409, "Company already exist for given argument");
 
-            try
-            {
-                var result = await this.companyRepository.InsertAsync(mappedCompany);
-                await this.companyRepository.SaveChangesAsync();
+        var user = await this.userRepository
+            .SelectAsync(t => t.Id.Equals(dto.OwnerId) && !t.IsDeleted);
+        if (user is null)
+            throw new CustomException(404, "User is not found");
 
-                return this.mapper.Map<CompanyForResultDto>(result);
-            }
 
-            catch (Exception)
-            {
-                throw new AhsanException(500, "Something went wrong");
-            }
-        }
 
-        public async ValueTask<bool> DeleteAsync(Expression<Func<Company, bool>> expression)
-        {
-            var company = await this.companyRepository.GetAsync(expression);
+        Company mappedCompany = this.mapper.Map<Company>(dto);
+        Company createdCompany = await this.companyRepository.InsertAsync(mappedCompany);
+        await this.companyRepository.SaveChangesAsync();
 
-            if (company is null)
-            {
-                throw new AhsanException(404, "Company not found");
-            }
+        var result = this.mapper.Map<CompanyForResultDto>(createdCompany);
+        result.Owner = this.mapper.Map<UserForResultDto>(user);
+        return result;
+    }
 
-            await companyRepository.DeleteAsync(company);
+    public async ValueTask<bool> DeleteAsync(long companyId)
+    {
+        Company company = await this.companyRepository
+            .SelectAsync(company => company.Id.Equals(companyId) && !company.IsDeleted);
+        if (company is null)
+            throw new CustomException(404, "Company is not found for given id");
 
-            await this.companyRepository.SaveChangesAsync();
+        bool result = await this.companyRepository.DeleteAsync(company);
+        await this.companyRepository.SaveChangesAsync();
+        return result;
+    }
 
-            return true;
-        }
+    public async ValueTask<List<CompanyForResultDto>> GetAllAsync(string search = null)
+    {
+        IQueryable<Company> companies = companyRepository
+            .SelectAll(t => !t.IsDeleted, isTracking: false)
+            .Include(t => t.Owner);
 
-        public async ValueTask<IEnumerable<CompanyForResultDto>> GetAllAsync(Expression<Func<Company, bool>> expression = null, string search = null)
-        {
-            var companies = companyRepository.GetAll(expression, new string[] {"User"} ,isTracking: false);
+        var result =
+            mapper.Map<List<CompanyForResultDto>>(companies);
 
-            var matchingCompanies = await companies.Where(
-                c => c.Name.ToLower() == search ).ToListAsync();
+        if (!string.IsNullOrEmpty(search))
+            return result.Where(c =>
+                c.Name.ToLower().Contains(search.ToLower())).ToList();
+        return result;
+    }
 
-            try
-            {
-                var result = mapper.Map<IEnumerable<CompanyForResultDto>>(matchingCompanies);
-                return result;
-            }
+    public async ValueTask<CompanyForResultDto> GetByIdAsync(long companyId)
+    {
+        Company company = await companyRepository
+            .SelectAsync(company => company.Id.Equals(companyId) && !company.IsDeleted);
+        if (company is null)
+            throw new CustomException(404, "Company not found for given id");
 
-            catch
-            {
-                throw new AhsanException(500, "Something went wromg");
-            }
-        }
+        var user = await this.userRepository
+            .SelectAsync(t => t.Id.Equals(company.OwnerId) && !t.IsDeleted);
+        if (user is null)
+            throw new CustomException(404, "User is not found");
 
-        public async ValueTask<CompanyForResultDto> GetAsync(Expression<Func<Company, bool>> expression)
-        {
-            var company = await companyRepository.GetAsync(expression);
+        var result = this.mapper.Map<CompanyForResultDto>(company);
+        result.Owner = this.mapper.Map<UserForResultDto>(user);
+        return result;
+    }
 
-            if (company is null)
-                throw new AhsanException(404, "Company not found");
+    public async ValueTask<CompanyForResultDto> ModifyAsync(CompanyForUpdateDto dto)
+    {
+        Company company = await companyRepository.SelectAsync(u => u.Id.Equals(dto.Id) && !u.IsDeleted);
+        if (company is null)
+            throw new CustomException(404, "Company not found");
 
-            try
-            {
-                var result = mapper.Map<CompanyForResultDto>(company);
-                return result;
-            }
+        var user = await this.userRepository
+            .SelectAsync(t => t.Id.Equals(company.OwnerId) && !t.IsDeleted);
+        if (user is null)
+            throw new CustomException(404, "User is not found");
 
-            catch
-            {
-                throw new AhsanException(500, "Something went wrong");
-            }
-        }
+        this.mapper.Map(dto, company);
+        company.UpdatedAt = DateTime.UtcNow;
+        await companyRepository.SaveChangesAsync();
 
-        public async ValueTask<CompanyForResultDto> UpdateAsync(long id, CompanyForResultDto dto)
-        {
-            var updatingCompany = await companyRepository.GetAsync(u => u.Id == id);
-
-            if (updatingCompany is null)
-            {
-                throw new AhsanException(404, "Company not found");
-            }
-
-            var company = mapper.Map<Company>(dto);
-
-            company.UpdatedAt = DateTime.UtcNow;
-
-            await companyRepository.UpdateAsync(company);
-
-            await companyRepository.SaveChangesAsync();
-
-            return mapper.Map<CompanyForResultDto>(company);
-        }
+        var result = this.mapper.Map<CompanyForResultDto>(company);
+        result.Owner = this.mapper.Map<UserForResultDto>(user);
+        return result;
     }
 }

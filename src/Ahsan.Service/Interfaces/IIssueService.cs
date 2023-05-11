@@ -1,15 +1,12 @@
-﻿using Ahsan.Domain.Entities;
-using Ahsan.Service.DTOs.Issues;
-using System.Linq.Expressions;
+﻿using Ahsan.Service.DTOs.Issues;
 
-namespace Ahsan.Service.Interfaces
+namespace Ahsan.Service.Interfaces;
+
+public interface IIssueService
 {
-    public interface IIssueService
-    {
-        ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto);
-        ValueTask<IssueForResultDto> UpdateAsync(long id, IssueForCreationDto dto);
-        ValueTask<IssueForResultDto> GetAsync(Expression<Func<Issue, bool>> expression);
-        ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(Expression<Func<Issue, bool>> expression = null, string search = null);
-        ValueTask<bool> DeleteAsync(Expression<Func<Issue, bool>> expression);
-    }
+    ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto);
+    ValueTask<IssueForResultDto> UpdateAsync(IssueForUpdateDto dto);
+    ValueTask<bool> DeleteAsync(long id);
+    ValueTask<IssueForResultDto> GetByIdAsync(long id);
+    ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(string search = null);
 }
