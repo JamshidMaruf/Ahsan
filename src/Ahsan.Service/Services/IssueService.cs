@@ -1,13 +1,9 @@
-﻿
-using Ahsan.Data.IRepositories;
-using Ahsan.Domain.Configurations;
+﻿using AutoMapper;
 using Ahsan.Domain.Entities;
-using Ahsan.Service.DTOs.CompanyEmployees;
-using Ahsan.Service.DTOs.Issues;
+using Ahsan.Data.IRepositories;
 using Ahsan.Service.Exceptions;
-using Ahsan.Service.Extensions;
 using Ahsan.Service.Interfaces;
-using AutoMapper;
+using Ahsan.Service.DTOs.Issues;
 
 namespace Ahsan.Service.Services;
 
@@ -22,14 +18,15 @@ public class IssueService : IIssueService
         IMapper mapper,
         IRepository<Issue> repository,
         ICompanyEmployeeService employeeService,
-        IIssueCategoryService issueCategoryService
-        )
+        IIssueCategoryService issueCategoryService,
+        IRepository<User> userRepository)
     {
         this.mapper = mapper;
         this.issueRepository = repository;
         this.employeeService = employeeService;
         this.issueCategoryService = issueCategoryService;
     }
+
     public async ValueTask<IssueForResultDto> CreateAsync(IssueForCreationDto dto)
     {
         var CountOfCompanyIssues = this.issueRepository.SelectAll(t => t.CompanyId == dto.CompanyId).Count();
@@ -67,6 +64,12 @@ public class IssueService : IIssueService
             var matchingIssues = results
                     .Where(t => t.Title.ToLower() == search || t.Description.Contains(search));
             return matchingIssues;
+        }
+
+        foreach (var item in results)
+        {
+            item.AssignedUser = await employeeService.GetByIdAsync(item.AssignedId);
+            item.Category = await issueCategoryService.GetByIdAsync(item.CategoryId);
         }
         return results;
     }
