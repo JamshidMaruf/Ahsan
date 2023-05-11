@@ -1,4 +1,5 @@
-﻿using Ahsan.Domain.Entities;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Users;
 using System.Linq.Expressions;
 
@@ -11,7 +12,7 @@ public interface IUserService
     ValueTask<UserForResultDto> ChangePasswordAsync(UserForChangePassword dto);
     ValueTask<UserForResultDto> GetByIdAsync(long id);
     ValueTask<IEnumerable<UserForResultDto>> GetAllAsync(
-        Expression<Func<User, bool>> expression = null, string search = null);
+        Expression<Func<User, bool>> expression = null, string search = null, PaginationParams @params = null);
     ValueTask<bool> DeleteAsync(long id);
     ValueTask<UserImageForResultDto> ImageUploadAsync(UserImageForCreationDto dto);
     ValueTask<bool> DeleteUserImageAsync(long userId);

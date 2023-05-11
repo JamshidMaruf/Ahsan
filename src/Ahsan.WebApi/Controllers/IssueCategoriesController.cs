@@ -1,4 +1,5 @@
-﻿using Ahsan.Service.DTOs.Companies;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Service.DTOs.Companies;
 using Ahsan.Service.DTOs.Issues;
 using Ahsan.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -51,11 +52,11 @@ public class IssueCategoriesController : BaseController
          });
 
     [HttpGet("get-list")]
-    public async Task<IActionResult> GetAllIssueCategories()
+    public async Task<IActionResult> GetAllIssueCategories(PaginationParams @params = null, string search = null)
          => Ok(new
          {
              Code = 200,
              Error = "Success",
-             Data = await this.issueCategoryService.GetAllAsync()
+             Data = await this.issueCategoryService.GetAllAsync(x => x.CompanyId > 0, search, @params)
          });
 }

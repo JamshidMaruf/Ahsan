@@ -1,4 +1,5 @@
-﻿using Ahsan.Domain.Entities;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.CompanyEmployees;
 using System.Linq.Expressions;
 
@@ -36,5 +37,5 @@ public interface ICompanyEmployeeService
     /// <param name="expression"></param>
     /// <param name="search"></param>
     /// <returns></returns>
-    ValueTask<IEnumerable<CompanyEmployeeForResultDto>> GetAllAsync(string search = null);
+    ValueTask<IEnumerable<CompanyEmployeeForResultDto>> GetAllAsync(PaginationParams @params = null, string search = null);
 }

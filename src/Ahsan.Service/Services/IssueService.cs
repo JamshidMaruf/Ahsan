@@ -8,6 +8,7 @@ using Ahsan.Service.Exceptions;
 using Ahsan.Service.Extensions;
 using Ahsan.Service.Interfaces;
 using AutoMapper;
+using System.Linq.Expressions;
 
 namespace Ahsan.Service.Services;
 
@@ -57,8 +58,21 @@ public class IssueService : IIssueService
         return true;
     }
 
-    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(string search = null)
+    public async ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(PaginationParams @params = null,string search = null)
     {
+        if(@params is null)
+        {
+            var pagedIssues = this.issueRepository.SelectAll(t => !t.IsDeleted, isTracking: false).ToPagedList(@params);
+            var pagedResults = this.mapper.Map<IEnumerable<IssueForResultDto>>(pagedIssues);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var matchingIssues = pagedResults
+                        .Where(t => t.Title.ToLower() == search || t.Description.Contains(search));
+                return matchingIssues;
+            }
+            return pagedResults;
+        }
         var issues = this.issueRepository.SelectAll(t => !t.IsDeleted, isTracking: false);
         var results = this.mapper.Map<IEnumerable<IssueForResultDto>>(issues);
 

@@ -1,4 +1,5 @@
-﻿using Ahsan.Service.DTOs.CompanyEmployees;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Service.DTOs.CompanyEmployees;
 using Ahsan.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,12 +50,12 @@ namespace Ahsan.WebApi.Controllers
              });
 
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetAllEmployees(string search = null)
+        public async Task<IActionResult> GetAllEmployees(string search = null, PaginationParams @params = null)
              => Ok(new
              {
                  Code = 200,
                  Error = "Success",
-                 Data = await this.companyEmployeeService.GetAllAsync(search)
+                 Data = await this.companyEmployeeService.GetAllAsync(@params,search)
              });
     }
 }

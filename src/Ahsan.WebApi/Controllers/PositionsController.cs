@@ -1,4 +1,5 @@
-﻿using Ahsan.Service.DTOs.Positions;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Service.DTOs.Positions;
 using Ahsan.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,12 +51,12 @@ public class PositionsController : BaseController
         });
 
     [HttpGet("get-list")]
-    public async Task<IActionResult> GetAllPositions()
+    public async Task<IActionResult> GetAllPositions(PaginationParams @params = null, string search = null)
         => Ok(new
         {
             Code = 200,
             Error = "Success",
-            Data = await this.positionService.GetAllAsync()
+            Data = await this.positionService.GetAllAsync(x => x.Id > 0,search, @params)
         });
 }
 

@@ -1,8 +1,10 @@
 ﻿using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Configurations;
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Companies;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
+using Ahsan.Service.Extensions;
 using Ahsan.Service.Interfaces;
 using Ahsan.Service.Validators.Companies;
 using AutoMapper;
@@ -68,11 +70,26 @@ public class CompanyService : ICompanyService
         return result;
     }
 
-    public async ValueTask<List<CompanyForResultDto>> GetAllAsync(string search = null)
+    public async ValueTask<List<CompanyForResultDto>> GetAllAsync(PaginationParams @params = null, string search = null)
     {
+        if(@params is null)
+        {
+           IQueryable<Company> pagedcompanies = companyRepository
+          .SelectAll(t => !t.IsDeleted, isTracking: false)
+          .Include(t => t.Owner).ToPagedList(@params);
+
+            var pagedresult =
+                mapper.Map<List<CompanyForResultDto>>(pagedcompanies);
+
+            if (!string.IsNullOrEmpty(search))
+                return pagedresult.Where(c =>
+                    c.Name.ToLower().Contains(search.ToLower())).ToList();
+            return pagedresult;
+        }
+
         IQueryable<Company> companies = companyRepository
-            .SelectAll(t => !t.IsDeleted, isTracking: false)
-            .Include(t => t.Owner);
+           .SelectAll(t => !t.IsDeleted, isTracking: false)
+           .Include(t => t.Owner);
 
         var result =
             mapper.Map<List<CompanyForResultDto>>(companies);
