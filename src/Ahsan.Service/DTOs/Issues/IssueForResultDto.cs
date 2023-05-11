@@ -9,6 +9,10 @@ public class IssueForResultDto
     public string Description { get; set; }
     public DateTime Deadline { get; set; }
     public long Code { get; set; }
+
+    public long CategoryId { get; set; }
     public IssueCategoryForResultDto Category { get; set; }
+
+    public long AssignedId { get; set; }
     public CompanyEmployeeForResultDto AssignedUser { get; set; }
 }
