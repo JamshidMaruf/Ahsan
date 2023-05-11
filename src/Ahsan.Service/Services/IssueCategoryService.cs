@@ -1,9 +1,11 @@
 ﻿using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Configurations;
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Companies;
 using Ahsan.Service.DTOs.Issues;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
+using Ahsan.Service.Extensions;
 using Ahsan.Service.Interfaces;
 using AutoMapper;
 using System.Linq.Expressions;
@@ -60,10 +62,22 @@ public class IssueCategoryService : IIssueCategoryService
     }
 
     public async ValueTask<IEnumerable<IssueCategoryForResultDto>> GetAllAsync(
-        Expression<Func<IssueCategory, bool>> expression = null, string search = null)
+        Expression<Func<IssueCategory, bool>> expression = null, string search = null, PaginationParams @params = null)
     {
+        if(@params is null)
+        {
+            var pagedIssueCategories = this.IssueCategoryRepository
+          .SelectAll(expression, new string[] { "Company" }, isTracking: false).ToPagedList(@params);
+
+            var pagedResult = this.mapper.Map<IEnumerable<IssueCategoryForResultDto>>(pagedIssueCategories);
+            if (!string.IsNullOrEmpty(search))
+                return pagedResult
+                    .Where(c => c.Name.ToLower() == search).ToList();
+
+            return pagedResult;
+        }
         var issueCategories = this.IssueCategoryRepository
-            .SelectAll(expression, new string[] { "Company" }, isTracking: false);
+            .SelectAll(expression, new string[] { "Company" }, isTracking: false).ToPagedList(@params);
 
         var result = this.mapper.Map<IEnumerable<IssueCategoryForResultDto>>(issueCategories);
         if (!string.IsNullOrEmpty(search))

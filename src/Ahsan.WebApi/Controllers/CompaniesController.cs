@@ -1,4 +1,5 @@
-﻿using Ahsan.Service.DTOs.Companies;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Service.DTOs.Companies;
 using Ahsan.Service.Interfaces;
 using Ahsan.WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -51,11 +52,11 @@ public class CompaniesController : BaseController
          });
 
     [HttpGet("get-list")]
-    public async Task<IActionResult> GetAllCompany(string search = null)
+    public async Task<IActionResult> GetAllCompany(string search = null, PaginationParams @params = null)
          => Ok(new
          {
              Code = 200,
              Error = "Success",
-             Data = await this.companyService.GetAllAsync(search)
+             Data = await this.companyService.GetAllAsync(@params, search)
          });
 }

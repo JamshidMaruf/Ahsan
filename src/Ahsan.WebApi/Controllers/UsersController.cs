@@ -1,4 +1,5 @@
-﻿using Ahsan.Service.DTOs.Users;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,12 +43,12 @@ public class UsersController : BaseController
         });
 
     [HttpGet("get-list")]
-    public async Task<IActionResult> GetAllUsers()
+    public async Task<IActionResult> GetAllUsers(PaginationParams @params = null, string search = null)
         => Ok(new
         {
             Code = 200,
             Error = "Success",
-            Data = await this.userService.GetAllAsync()
+            Data = await this.userService.GetAllAsync(x => x.Id > 0, search, @params)
         });
 
     [HttpPost("image-upload")]

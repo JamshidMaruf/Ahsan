@@ -1,7 +1,9 @@
 ﻿using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Configurations;
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Positions;
 using Ahsan.Service.Exceptions;
+using Ahsan.Service.Extensions;
 using Ahsan.Service.Interfaces;
 using AutoMapper;
 using System.Linq.Expressions;
@@ -44,8 +46,17 @@ public class PositionService : IPositionService
     }
 
     public async ValueTask<IEnumerable<PositionForResultDto>> GetAllAsync(
-        Expression<Func<Position, bool>> expression = null, string search = null)
+         Expression<Func<Position, bool>> expression = null, string search = null, PaginationParams @params = null)
     {
+        if(@params is null)
+        {
+            var pagedPositions = positionRepository.SelectAll(expression, isTracking: false).ToPagedList(@params);
+            var pagedResult = mapper.Map<IEnumerable<PositionForResultDto>>(pagedPositions);
+            if (!string.IsNullOrEmpty(search))
+                return pagedResult
+                    .Where(u => u.Name.ToLower().Contains(search.ToLower())).ToList();
+            return pagedResult;
+        }
         var positions = positionRepository.SelectAll(expression, isTracking: false);
         var result = mapper.Map<IEnumerable<PositionForResultDto>>(positions);
         if (!string.IsNullOrEmpty(search))

@@ -1,4 +1,5 @@
-﻿using Ahsan.Service.DTOs.Issues;
+﻿using Ahsan.Domain.Configurations;
+using Ahsan.Service.DTOs.Issues;
 
 namespace Ahsan.Service.Interfaces;
 
@@ -8,5 +9,5 @@ public interface IIssueService
     ValueTask<IssueForResultDto> UpdateAsync(IssueForUpdateDto dto);
     ValueTask<bool> DeleteAsync(long id);
     ValueTask<IssueForResultDto> GetByIdAsync(long id);
-    ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(string search = null);
+    ValueTask<IEnumerable<IssueForResultDto>> GetAllAsync(PaginationParams @params = null, string search = null);
 }

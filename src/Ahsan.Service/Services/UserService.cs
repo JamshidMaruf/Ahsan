@@ -1,4 +1,5 @@
 ﻿using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Configurations;
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.Users;
 using Ahsan.Service.Exceptions;
@@ -49,8 +50,25 @@ public class UserService : IUserService
     }
 
     public async ValueTask<IEnumerable<UserForResultDto>> GetAllAsync(
-        Expression<Func<User, bool>> expression = null, string search = null)
+          Expression<Func<User, bool>> expression = null, string search = null, PaginationParams @params = null)
     {
+        if(@params is null)
+        {
+            var pagedUsers = userRepository.SelectAll(expression, isTracking: false).ToPagedList(@params);
+            var pagedResult = mapper.Map<IEnumerable<UserForResultDto>>(pagedUsers);
+
+            foreach (var item in pagedResult)
+                item.Image = mapper.Map<UserImageForResultDto>(
+                    await this.userImageRepository.SelectAsync(t => t.UserId.Equals(item.Id)));
+
+            if (!string.IsNullOrEmpty(search))
+                return pagedResult.Where(
+                    u => u.Firstname.ToLower().Contains(search.ToLower()) ||
+                    u.Lastname.ToLower().Contains(search.ToLower()) ||
+                    u.Username.ToLower().Contains(search.ToLower())).ToList();
+
+            return pagedResult;
+        }
         var users = userRepository.SelectAll(expression, isTracking: false);
         var result = mapper.Map<IEnumerable<UserForResultDto>>(users);
 

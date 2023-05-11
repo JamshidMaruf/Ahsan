@@ -29,7 +29,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<CompanyEmployee>()
             .HasOne(ce => ce.Employee)
             .WithMany()
-            .HasForeignKey(ce => ce.EmployeeId)
+            .HasForeignKey(ce => ce.EmployeeId) 
             .OnDelete(DeleteBehavior.Cascade);  //When Company Employee is deleted it's Id is disposed of as well 
 
         modelBuilder.Entity<CompanyEmployee>()

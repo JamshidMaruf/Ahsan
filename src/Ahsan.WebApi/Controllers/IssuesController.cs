@@ -50,12 +50,12 @@ namespace Ahsan.WebApi.Controllers
              });
 
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetAllIssues([FromQuery]string search = null)
+        public async Task<IActionResult> GetAllIssues([FromQuery] string search = null, PaginationParams @params = null)
              => Ok(new
              {
                  Code = 200,
                  Error = "Success",
-                 Data = await this.issueService.GetAllAsync(search)
+                 Data = await this.issueService.GetAllAsync(@params, search)
              });
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Ahsan.Data.IRepositories;
+using Ahsan.Domain.Configurations;
 using Ahsan.Domain.Entities;
 using Ahsan.Service.DTOs.CompanyEmployees;
 using Ahsan.Service.DTOs.Issues;
@@ -67,8 +68,23 @@ namespace Ahsan.Service.Services
             return result;
         }
 
-        public async ValueTask<IEnumerable<CompanyEmployeeForResultDto>> GetAllAsync(string search = null)
+        public async ValueTask<IEnumerable<CompanyEmployeeForResultDto>> GetAllAsync(PaginationParams @params = null, string search = null)
         {
+            if(@params is null)
+            {
+                var pagedEmployee = this.companyEmployeeRepository
+               .SelectAll(t => !t.IsDeleted, /*includes: new string[] { "User", "Company", "Position", "Issue" },*/ isTracking: false);
+                var pagedResult = this.mapper.Map<IEnumerable<CompanyEmployeeForResultDto>>(pagedEmployee);
+
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    var matchingEmployee = pagedResult.Where(c => c.Company.Name.ToLower().Contains(search.ToLower()));
+                    return matchingEmployee;
+                }
+
+                return pagedResult;
+            }
             var employee = this.companyEmployeeRepository
                 .SelectAll(t => !t.IsDeleted, /*includes: new string[] { "User", "Company", "Position", "Issue" },*/ isTracking: false);
             var result = this.mapper.Map<IEnumerable<CompanyEmployeeForResultDto>>(employee);
